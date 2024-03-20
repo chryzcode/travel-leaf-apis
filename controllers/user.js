@@ -1,4 +1,4 @@
-import { User } from "../models/users.js";
+import User  from "../models/user.js";
 import { StatusCodes } from "http-status-codes";
 import { transporter, generateToken } from "../utils/user.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
@@ -18,9 +18,8 @@ export const logout = async (req, res) => {
 
 export const signUp = async (req, res) => {
   const user = await User.create({ ...req.body });
-  const fromEmail = process.env.Email_User;
   const maildata = {
-    from: `Travel Leaf ${fromEmail}`,
+    from: process.env.Email_User,
     to: user.email,
     subject: `${user.fullName} verify your account`,
     html: `<p>Please use the following <a href="${domain}/auth/verify-account/?userId=${
