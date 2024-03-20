@@ -3,6 +3,18 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
+const userTypeSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  userType: {
+    type: String,
+    enum: ["HOST", "GUEST"],
+    required: [true, "Please provide user type HOST or ADMIN"],
+  },
+});
+
 const userSchema = new mongoose.Schema(
   {
     fullName: {
@@ -26,11 +38,6 @@ const userSchema = new mongoose.Schema(
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         "Please provide a valid email",
       ],
-    },
-    userType: {
-      type: String,
-      enum: ["HOST", "GUEST"],
-      required: [true, "Please provide user type HOST or ADMIN"],
     },
     password: {
       type: String,
