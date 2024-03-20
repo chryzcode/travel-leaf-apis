@@ -13,8 +13,33 @@ import {
 } from "../controllers/user.js";
 
 import authenticateUser from "../middleware/authentication.js";
+import passport from "passport";
+import { StatusCodes } from "http-status-codes";
 
 const router = express.Router();
+
+router.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+  })
+);
+
+// Call back route
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    access_type: "offline",
+    scope: ["email", "profile"],
+  }),
+  (req, res) => {
+    if (!req.user) {
+      res.status(StatusCodes.BAD_REQUEST).json({ error: "Authentication failed" });
+    }
+    res.status(StatusCodes.OK).json({ user: { fullName: req.user.fullName }, token: req.user.token });
+  }
+);
+
 
 router.route("/auth/signUp").post(signUp);
 router.route("/auth/sigin").post(signIn);

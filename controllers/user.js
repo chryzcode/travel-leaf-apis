@@ -1,8 +1,10 @@
-import User  from "../models/user.js";
+import { User } from "../models/user.js";
 import { StatusCodes } from "http-status-codes";
 import { transporter, generateToken } from "../utils/user.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 import { v4 as uuidv4 } from "uuid";
+import jwt from "jsonwebtoken";
+import cloudinary from "cloudinary"
 
 const uniqueID = uuidv4();
 const domain = process.env.DOMAIN || "http://127.0.0.1:8000";
@@ -62,12 +64,10 @@ export const signIn = async (req, res) => {
     throw new BadRequestError("Put in your email/username and password");
   }
   var user = await User.findOne({ email: email });
+
   if (!user) {
-    user = await User.findOne({ username: email });
-  } else if (!user) {
     throw new UnauthenticatedError("User does not exist");
   }
-
   const passwordMatch = await user.comparePassword(password);
   if (!passwordMatch) {
     throw new UnauthenticatedError("Invalid password");
@@ -85,8 +85,10 @@ export const signIn = async (req, res) => {
     };
     transporter.sendMail(maildata, (error, info) => {
       if (error) {
+        console.log(error)
         res.status(StatusCodes.BAD_REQUEST).send();
       }
+      console.log(info)
       res.status(StatusCodes.OK).send();
     });
     throw new UnauthenticatedError("Account is not verified, kindly check your mail for verfication");
