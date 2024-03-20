@@ -1,4 +1,4 @@
-import User  from "../models/user.js";
+import {User}  from "../models/user.js";
 import { StatusCodes } from "http-status-codes";
 import { transporter, generateToken } from "../utils/user.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
