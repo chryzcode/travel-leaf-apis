@@ -11,6 +11,9 @@ import rateLimit from "express-rate-limit";
 import errorHandlerMiddleware from "./middleware/error-handler.js";
 import notFoundMiddleware from "./middleware/not-found.js";
 
+//import route
+import userRouter from "./routes/user.js"
+
 const app = express();
 const port = process.env.PORT || 8000;
 
@@ -21,6 +24,8 @@ app.use(
     max: 100, //limit each ip to 100 requests per windowsMs
   })
 );
+
+
 app.use(express.json());
 app.use(helmet());
 app.use(cors());
@@ -31,6 +36,8 @@ app.get("/", (req, res) => {
     `Travel Leafs API`
   );
 });
+
+app.use("/api/v1/user", userRouter);
 
 
 app.use(notFoundMiddleware);
