@@ -10,7 +10,6 @@ import rateLimit from "express-rate-limit";
 import session from "express-session";
 import passport from "passport";
 import "./utils/passport.js";
-import { StatusCodes } from "http-status-codes";
 
 //error handler
 import errorHandlerMiddleware from "./middleware/error-handler.js";
@@ -50,29 +49,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["email", "profile"],
-  })
-);
 
-// Call back route
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    access_type: "offline",
-    scope: ["email", "profile"],
-  }),
-  (req, res) => {
-    if (!req.user) {
-      res.status(StatusCodes.BAD_REQUEST).json({ error: "Authentication failed" });
-    }
-    res.status(StatusCodes.OK).json({ user: { fullName: req.user.fullName }, token: req.user.token });
-  }
-);
-
-app.use("/api/v1/user", userRouter);
+app.use("/", userRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

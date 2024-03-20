@@ -11,7 +11,7 @@ const userTypeSchema = new mongoose.Schema({
   userType: {
     type: String,
     enum: ["HOST", "GUEST"],
-    required: [true, "Please provide user type HOST or ADMIN"],
+    required: [true, "Please provide user type HOST or GUEST"],
   },
 });
 
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Please provide password"],
-      minlength: 6,
+      minlength: 5,
     },
     token: {
       type: String,
@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function () {
   const salt = await bcrypt.genSalt(10);
-  this.password = bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 userSchema.methods.createJWT = function () {
