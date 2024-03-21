@@ -94,3 +94,10 @@ export const editHouse = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ house });
 };
+
+export const getAvailableHouses = async (req, res) => {
+  const currentDate = new Date();
+  const { userId } = req.user;
+  const houses = await House.find({ user: userId, dateAvailable: { $gte: currentDate } });
+  res.status(StatusCodes.OK).json({ houses });
+};

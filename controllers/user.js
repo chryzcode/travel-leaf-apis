@@ -228,10 +228,9 @@ export const changeUserToHost = async (req, res) => {
     throw new NotFoundError(`User with id ${userId} does not exist`);
   }
 
-  await User.findOneAndUpdate({ _id: userId }, { userType: "Host" }, { new: true, runValidators: true });
+  user = await User.findOneAndUpdate({ _id: userId }, { userType: "Host" }, { new: true, runValidators: true });
   res.status(StatusCodes.OK).json({ user });
 };
-
 
 export const changeUserToGuest = async (req, res) => {
   const { userId } = req.user;
@@ -240,6 +239,7 @@ export const changeUserToGuest = async (req, res) => {
     throw new NotFoundError(`User with id ${userId} does not exist`);
   }
 
-  await User.findOneAndUpdate({ _id: userId }, { userType: "Guest" }, { new: true, runValidators: true });
+  user = await User.findOneAndUpdate({ _id: userId }, { userType: "Guest" }, { new: true, runValidators: true });
   res.status(StatusCodes.OK).json({ user });
 };
+
