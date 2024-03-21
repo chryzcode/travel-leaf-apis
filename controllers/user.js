@@ -4,7 +4,8 @@ import { transporter, generateToken } from "../utils/user.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
-import cloudinary from "cloudinary"
+import cloudinary from "cloudinary";
+import bcrypt from "bcryptjs";
 
 const uniqueID = uuidv4();
 const domain = process.env.DOMAIN || "http://127.0.0.1:8000";
@@ -85,10 +86,10 @@ export const signIn = async (req, res) => {
     };
     transporter.sendMail(maildata, (error, info) => {
       if (error) {
-        console.log(error)
+        console.log(error);
         res.status(StatusCodes.BAD_REQUEST).send();
       }
-      console.log(info)
+      console.log(info);
       res.status(StatusCodes.OK).send();
     });
     throw new UnauthenticatedError("Account is not verified, kindly check your mail for verfication");
@@ -199,4 +200,23 @@ export const verifyForgotPasswordToken = async (req, res) => {
     console.error("Token verification failed:", error);
     res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid or expired token" });
   }
+};
+
+export const contactUs = async (req, res) => {
+  const { fullName, email, message } = req.body;
+  if (!fullName || !email || !message) {
+    throw new BadRequestError("fullName, email and message fields are compulsory");
+  }
+  const maildata = {
+    from: email,
+    to: process.env.Email_User,
+    subject: `${email} sent mail to Travel Leaf`,
+    html: `${message}`,
+  };
+  transporter.sendMail(maildata, (error, info) => {
+    if (error) {
+      res.status(StatusCodes.BAD_REQUEST).send();
+    }
+    res.status(StatusCodes.OK).send("Mail sent");
+  });
 };

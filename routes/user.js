@@ -10,6 +10,7 @@ import {
   verifyForgotPasswordToken,
   verifyAccount,
   currentUser,
+  contactUs,
 } from "../controllers/user.js";
 
 import authenticateUser from "../middleware/authentication.js";
@@ -40,7 +41,7 @@ router.get(
   }
 );
 
-
+router.route("/contact-us").post(contactUs);
 router.route("/auth/signUp").post(signUp);
 router.route("/auth/sigin").post(signIn);
 router.route("/profile/:username").get(getUser);
