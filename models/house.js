@@ -59,6 +59,11 @@ const houseSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Please provide date"],
     },
+    features: [
+      {
+        type: String,
+      },
+    ],
     media: [mediaSchema],
   },
   { timestamps: true }

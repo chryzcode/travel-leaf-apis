@@ -3,6 +3,11 @@ import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
 import { User } from "../models/user.js";
 
+export const allHouseTypes = async (req, res) => {
+    const types = houseType.find({})
+    res.status(StatusCodes.OK).json({ types });
+};
+
 export const createHouse = async (req, res) => {
   req.body.user = req.user.userId;
   const media = req.body.media;
@@ -45,7 +50,12 @@ export const editHouse = async (req, res) => {
   }
   type = await houseType.findOne({ name: req.body.houseType });
   req.body.houseType = type.id;
-  if (media) {
+
+  var house = await House.findOne({ _id: houseId, user: userId });
+  if (!house) {
+    throw new NotFoundError(`House with id ${houseId} does not exist`);
+  }
+  if (media !== house.media) {
     for (let i = 0; i < media.length; i++) {
       try {
         const result = await cloudinary.v2.uploader.upload(media[i].url, {
@@ -60,13 +70,10 @@ export const editHouse = async (req, res) => {
     }
   }
 
-  const house = await House.findOneAndUpdate({ _id: houseId, user: userId }, req.body, {
+  house = await House.findOneAndUpdate({ _id: houseId, user: userId }, req.body, {
     new: true,
     runValidators: true,
   });
-  if (!house) {
-    throw new NotFoundError(`House with id ${houseId} does not exist`);
-  }
 
   res.status(StatusCodes.OK).json({ house });
 };
