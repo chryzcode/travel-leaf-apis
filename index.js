@@ -17,6 +17,7 @@ import notFoundMiddleware from "./middleware/not-found.js";
 
 //import route
 import userRouter from "./routes/user.js";
+import houseRouter from "./routes/house.js";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -51,6 +52,7 @@ app.use(passport.session());
 
 
 app.use("/", userRouter);
+app.use("/house", houseRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
