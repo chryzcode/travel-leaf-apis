@@ -11,6 +11,8 @@ import {
   verifyAccount,
   currentUser,
   contactUs,
+  changeUserToHost,
+  changeUserToGuest,
 } from "../controllers/user.js";
 
 import authenticateUser from "../middleware/authentication.js";
@@ -52,5 +54,7 @@ router.route("/delete").delete(authenticateUser, deleteUser);
 router.route("/send-forgot-password-link").post(sendForgotPasswordLink);
 router.route("/auth/forgot-password/:userId/:token").post(verifyForgotPasswordToken);
 router.route("/auth/verify-account/:userId/:token").post(verifyAccount);
+router.route("/switch/host").post(authenticateUser, changeUserToHost);
+router.route("/switch/guest").post(authenticateUser, changeUserToGuest);
 
 export default router;
