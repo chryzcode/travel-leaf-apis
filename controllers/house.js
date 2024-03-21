@@ -4,8 +4,25 @@ import { StatusCodes } from "http-status-codes";
 import { User } from "../models/user.js";
 
 export const allHouseTypes = async (req, res) => {
-    const types = houseType.find({})
-    res.status(StatusCodes.OK).json({ types });
+  const types = await houseType.find({});
+  res.status(StatusCodes.OK).json({ types });
+};
+
+export const allHouses = async (req, res) => {
+  const houses = await House.find({}).sort("createdAt");
+  res.status(StatusCodes.OK).json({ houses });
+};
+
+export const currentUserHouses = async (req, res) => {
+  const userId = req.user.userId;
+  const houses = await House.find({ user: userId }).sort("createdAt");;
+  res.status(StatusCodes.OK).json({ houses });
+};
+
+export const getHousesByTypes = async (req, res) => {
+  const { typeId } = req.params;
+  const houses = await House.find({ houseType: typeId });;
+  res.status(StatusCodes.OK).json({ houses });
 };
 
 export const createHouse = async (req, res) => {
@@ -76,4 +93,11 @@ export const editHouse = async (req, res) => {
   });
 
   res.status(StatusCodes.OK).json({ house });
+};
+
+export const getAvailableHouses = async (req, res) => {
+  const currentDate = new Date();
+  const { userId } = req.user;
+  const houses = await House.find({ user: userId, dateAvailable: { $gte: currentDate } });
+  res.status(StatusCodes.OK).json({ houses });
 };

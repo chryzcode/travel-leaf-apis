@@ -3,18 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
-const userTypeSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  userType: {
-    type: String,
-    enum: ["HOST", "GUEST"],
-    required: [true, "Please provide user type HOST or GUEST"],
-  },
-});
-
 const userSchema = new mongoose.Schema(
   {
     fullName: {
@@ -29,6 +17,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       match: [/^\S+$/, "Please provide a valid username"],
+    },
+    userType: {
+      type: String,
+      enum: ["Host", "Guest"],
+      default: "Guest",
     },
     email: {
       required: true,
@@ -77,6 +70,5 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 const User = mongoose.model("User", userSchema);
-const userType = mongoose.model("userType", userTypeSchema);
 
-export { User, userType };
+export { User };
