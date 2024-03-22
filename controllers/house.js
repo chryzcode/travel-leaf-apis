@@ -2,6 +2,7 @@ import { House, houseType } from "../models/house.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
 import { User } from "../models/user.js";
+import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 
 export const allHouseTypes = async (req, res) => {
   const types = await houseType.find({});
