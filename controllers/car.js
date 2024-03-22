@@ -1,7 +1,6 @@
 import { carType, Car } from "../models/car.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
-import { User } from "../models/user.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 
 export const allCarTypes = async (req, res) => {
@@ -101,4 +100,13 @@ export const getAvailableCars = async (req, res) => {
   const { userId } = req.user;
   const cars = await Car.find({ user: userId, dateAvailable: { $gte: currentDate } });
   res.status(StatusCodes.OK).json({ cars });
+};
+
+export const getCarDetail = async (req, res) => {
+  const { carId } = req.params;
+  const car = await Car.findOne({ _id: carId });
+  if (!car) {
+    throw new NotFoundError(`Car with ${carId} does not exist`);
+  }
+  res.status(StatusCodes.OK).json({ car });
 };

@@ -7,6 +7,7 @@ import {
   currentUserHouses,
   getHousesByTypes,
   getAvailableHouses,
+  getHouseDetail,
 } from "../controllers/house.js";
 
 import authenticateUser from "../middleware/authentication.js";
@@ -19,6 +20,7 @@ router.route("/filter/:typeId").get(getHousesByTypes);
 router.route("/create").post(authenticateUser, createHouse);
 router.route("/edit/:houseId").put(authenticateUser, editHouse);
 router.route("/house-types").get(allHouseTypes);
+router.route("/:houseId/detail").get(authenticateUser, getHouseDetail);
 router.route("/available-house").get(authenticateUser, getAvailableHouses);
 
 export default router;
