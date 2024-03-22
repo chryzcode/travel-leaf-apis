@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { Media } from "./house.js";
 
 const carTypeSchema = new mongoose.Schema({
   name: {
@@ -39,7 +38,7 @@ const carSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Please provide date"],
     },
-    media: [Media],
+    media: ["Media"],
     description: {
       type: String,
       required: [true, "Please provide description"],
