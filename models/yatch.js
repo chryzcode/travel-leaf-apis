@@ -34,6 +34,13 @@ const yatchSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Please provide date"],
     },
+    available: {
+      type: Boolean,
+    },
+    booked: {
+      type: Boolean,
+      default: false,
+    },
     media: ["Media"],
     description: {
       type: String,
@@ -62,6 +69,14 @@ const yatchSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+yatchSchema.pre("save", async function () {
+  const currentDate = new Date();
+  if (currentDate < this.dateAvailable) {
+    this.available = true;
+  }
+  this.available = false;
+});
 
 const Yatch = mongoose.model("Yatch", yatchSchema);
 const yatchType = mongoose.model("yatchType", yatchTypeSchema);

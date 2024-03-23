@@ -45,6 +45,13 @@ const houseSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide description"],
     },
+    available: {
+      type: Boolean,
+    },
+    booked: {
+      type: Boolean,
+      default: false,
+    },
     currency: {
       type: String,
       enum: ["USD"],
@@ -72,6 +79,14 @@ const houseSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+houseSchema.pre("save", async function () {
+  const currentDate = new Date();
+  if (currentDate < this.dateAvailable) {
+    this.available = true;
+  }
+  this.available = false;
+});
 
 const House = mongoose.model("House", houseSchema);
 const houseType = mongoose.model("houseType", houseTypeSchema);
