@@ -9,6 +9,7 @@ import {
   getAvailableHouses,
   getHouseDetail,
   getBookedHouses,
+  deleteHouse,
 } from "../controllers/house.js";
 
 import authenticateUser from "../middleware/authentication.js";
@@ -24,4 +25,6 @@ router.route("/house-types").get(allHouseTypes);
 router.route("/:houseId/detail").get(authenticateUser, getHouseDetail);
 router.route("/available-houses").get(authenticateUser, getAvailableHouses);
 router.route("/booked-houses").get(authenticateUser, getBookedHouses);
+router.route("/delete/:houseId").put(authenticateUser, deleteHouse);
+
 export default router;
