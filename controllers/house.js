@@ -97,7 +97,7 @@ export const editHouse = async (req, res) => {
 
 export const getAvailableHouses = async (req, res) => {
   const { userId } = req.user;
-  const houses = await House.find({ user: userId, available: true });
+  const houses = await House.find({ user: userId, booked: false });
   res.status(StatusCodes.OK).json({ houses });
 };
 
@@ -122,6 +122,9 @@ export const deleteHouse = async (req, res) => {
   const house = await House.findOneAndDelete({ _id: houseId, user: userId });
   if (!house) {
     throw new NotFoundError(`House with ${houseId} does not exist`);
+  }
+  if (house.booked == true) {
+    throw new UnauthenticatedError(`You can not deleted a booked house`);
   }
   res.status(StatusCodes.OK).send();
 };

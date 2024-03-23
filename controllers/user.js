@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 import cloudinary from "cloudinary";
 import bcrypt from "bcryptjs";
+import { Wallet } from "../models/payment.js";
 
 const uniqueID = uuidv4();
 const domain = process.env.DOMAIN || "http://127.0.0.1:8000";
@@ -38,6 +39,12 @@ export const signUp = async (req, res) => {
     res.status(StatusCodes.OK).send();
   });
   const token = user.createJWT();
+  const wallet = await Wallet.findOne({ user: user.id });
+  if (!wallet) {
+    await Wallet.create({
+      user: user.id,
+    });
+  }
   res.status(StatusCodes.CREATED).json({
     user: { fullName: user.fullName },
     token,

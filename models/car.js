@@ -56,13 +56,13 @@ const carSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      enum: ["USD"],
-      default: "USD",
-      required: [true, "Please provide currency, ex. USD"],
+      enum: ["usd"],
+      default: "usd",
+      required: [true, "Please provide currency, ex. usd"],
     },
-    installmentalPayment: {
-      type: Boolean,
-      default: true,
+    price: {
+      type: Number,
+      required: [true, "Please provide price"],
     },
     features: [
       {
@@ -73,13 +73,6 @@ const carSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-carSchema.pre("save", async function () {
-  const currentDate = new Date();
-  if (currentDate < this.dateAvailable) {
-    this.available = true;
-  }
-  this.available = false;
-});
 
 const Car = mongoose.model("Car", carSchema);
 const carType = mongoose.model("carType", carTypeSchema);
