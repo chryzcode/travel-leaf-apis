@@ -1,21 +1,25 @@
 import mongoose from "mongoose";
 
-const carTypeSchema = new mongoose.Schema({
+const yatchTypeSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please provide a valid name"],
   },
 });
 
-const carSchema = new mongoose.Schema(
+const yatchSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    name: {
+      type: String,
+      required: [true, "Please provide name"],
+    },
     carType: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "carType",
+      ref: "yatchType",
       required: [true, "Please provide car type"],
     },
     location: {
@@ -25,18 +29,6 @@ const carSchema = new mongoose.Schema(
     brand: {
       type: String,
       required: [true, "Please provide brand"],
-    },
-    year: {
-      type: Number,
-      required: [true, "Please provide car year"],
-    },
-    color: {
-      type: String,
-      required: [true, "Please provide car color"],
-    },
-    plateNumber: {
-      type: String,
-      required: [true, "Please provide car plate number"],
     },
     dateAvailable: {
       type: Date,
@@ -71,7 +63,7 @@ const carSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Car = mongoose.model("Car", carSchema);
-const carType = mongoose.model("carType", carTypeSchema);
+const Yatch = mongoose.model("Yatch", yatchSchema);
+const yatchType = mongoose.model("yatchType", yatchTypeSchema);
 
-export { Car, carType };
+export { Yatch, yatchType };
