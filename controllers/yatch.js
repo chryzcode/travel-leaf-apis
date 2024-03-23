@@ -115,3 +115,13 @@ export const getYatchDetail = async (req, res) => {
   }
   res.status(StatusCodes.OK).json({ yatch });
 };
+
+export const deleteYatch = async (req, res) => {
+  const { yatchId } = req.params;
+  const { userId } = req.user;
+  const yatch = await Yatch.findOneAndDelete({ _id: yatchId, user: userId });
+  if (!yatch) {
+    throw new NotFoundError(`Yatch with ${yatchId} does not exist`);
+  }
+  res.status(StatusCodes.OK).send();
+};

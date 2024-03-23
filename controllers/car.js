@@ -115,3 +115,13 @@ export const getCarDetail = async (req, res) => {
   }
   res.status(StatusCodes.OK).json({ car });
 };
+
+export const deleteCar = async (req, res) => {
+  const { carId } = req.params;
+  const { userId } = req.user;
+  const car = await Car.findOneAndDelete({ _id: carId, user: userId });
+  if (!car) {
+    throw new NotFoundError(`Car with ${carId} does not exist`);
+  }
+  res.status(StatusCodes.OK).send();
+};

@@ -9,6 +9,7 @@ import {
   getAvailableYatchs,
   getYatchDetail,
   getBookedYatchs,
+  deleteYatch,
 } from "../controllers/yatch.js";
 
 import authenticateUser from "../middleware/authentication.js";
@@ -20,9 +21,11 @@ router.route("/user-yatchs").get(authenticateUser, currentUserYatchs);
 router.route("/filter/:typeId").get(getYatchsByTypes);
 router.route("/create").post(authenticateUser, createYatch);
 router.route("/edit/:yatchId").put(authenticateUser, editYatch);
-router.route("/yatchId/detail").get(authenticateUser, getYatchDetail);
+router.route("/:yatchId/detail").get(authenticateUser, getYatchDetail);
 router.route("/yatch-types").get(allYatchTypes);
 router.route("/available-yatchs").get(authenticateUser, getAvailableYatchs);
 router.route("/booked-yatchs").get(authenticateUser, getBookedYatchs);
+router.route("/delete/:yatchId").delete(authenticateUser, deleteYatch);
+
 
 export default router;

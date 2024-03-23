@@ -115,3 +115,13 @@ export const getHouseDetail = async (req, res) => {
   }
   res.status(StatusCodes.OK).json({ house });
 };
+
+export const deleteHouse = async (req, res) => {
+  const { houseId } = req.params;
+  const { userId } = req.user;
+  const house = await House.findOneAndDelete({ _id: houseId, user: userId });
+  if (!house) {
+    throw new NotFoundError(`House with ${houseId} does not exist`);
+  }
+  res.status(StatusCodes.OK).send();
+};
