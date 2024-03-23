@@ -42,6 +42,13 @@ const carSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Please provide date"],
     },
+    available: {
+      type: Boolean,
+    },
+    booked: {
+      type: Boolean,
+      default: false,
+    },
     media: ["Media"],
     description: {
       type: String,
@@ -70,6 +77,14 @@ const carSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+carSchema.pre("save", async function () {
+  const currentDate = new Date();
+  if (currentDate < this.dateAvailable) {
+    this.available = true;
+  }
+  this.available = false;
+});
 
 const Car = mongoose.model("Car", carSchema);
 const carType = mongoose.model("carType", carTypeSchema);

@@ -96,9 +96,14 @@ export const editCar = async (req, res) => {
 };
 
 export const getAvailableCars = async (req, res) => {
-  const currentDate = new Date();
   const { userId } = req.user;
-  const cars = await Car.find({ user: userId, dateAvailable: { $gte: currentDate } });
+  const cars = await Car.find({ user: userId, available: true });
+  res.status(StatusCodes.OK).json({ cars });
+};
+
+export const getBookedCars = async (req, res) => {
+  const { userId } = req.user;
+  const cars = await Car.find({ user: userId, booked: true });
   res.status(StatusCodes.OK).json({ cars });
 };
 
