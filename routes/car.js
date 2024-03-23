@@ -25,6 +25,6 @@ router.route("/:carId/detail").get(authenticateUser, getCarDetail);
 router.route("/car-types").get(allCarTypes);
 router.route("/available-cars").get(authenticateUser, getAvailableCars);
 router.route("/booked-cars").get(authenticateUser, getBookedCars);
-router.route("/delete/:carId").put(authenticateUser, deleteCar);
+router.route("/delete/:carId").delete(authenticateUser, deleteCar);
 
 export default router;

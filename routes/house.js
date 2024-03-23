@@ -25,6 +25,6 @@ router.route("/house-types").get(allHouseTypes);
 router.route("/:houseId/detail").get(authenticateUser, getHouseDetail);
 router.route("/available-houses").get(authenticateUser, getAvailableHouses);
 router.route("/booked-houses").get(authenticateUser, getBookedHouses);
-router.route("/delete/:houseId").put(authenticateUser, deleteHouse);
+router.route("/delete/:houseId").delete(authenticateUser, deleteHouse);
 
 export default router;

@@ -25,7 +25,7 @@ router.route("/:yatchId/detail").get(authenticateUser, getYatchDetail);
 router.route("/yatch-types").get(allYatchTypes);
 router.route("/available-yatchs").get(authenticateUser, getAvailableYatchs);
 router.route("/booked-yatchs").get(authenticateUser, getBookedYatchs);
-router.route("/delete/:yatchId").put(authenticateUser, deleteYatch);
+router.route("/delete/:yatchId").delete(authenticateUser, deleteYatch);
 
 
 export default router;
