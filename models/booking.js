@@ -28,6 +28,9 @@ const bookingSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    listingId: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

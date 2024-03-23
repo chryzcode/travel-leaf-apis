@@ -5,7 +5,6 @@ import { House } from "../models/house.js";
 import { Yatch } from "../models/yatch.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 import stripePackage from "stripe";
-import { createPayment } from "./payment.js";
 import { User } from "../models/user.js";
 import { StatusCodes } from "http-status-codes";
 
@@ -34,6 +33,7 @@ export const createBooking = async (req, res) => {
   console.log(listing.price * days);
   const amount = Number(listing.price * days);
   req.body.amount = amount;
+  req.body.listingId = listing.id;
   var booking = await Booking.create({ ...req.body });
   const successUrl = `${DOMAIN}/booking/${booking.id}/success`;
   const cancelUrl = `${DOMAIN}/booking/${booking.id}/cancel`;
@@ -62,6 +62,4 @@ export const createBooking = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).json({ error: "payment link not created" });
   }
   // await listing.findOneAndUpdate({ dateAvailable: departure, booked: true });
-  // await booking.findOneAndUpdate({ paid: true });
-  // res.status(StatusCodes.OK).json({ success: "payment successful" });
 };

@@ -1,20 +1,21 @@
-import "dotenv/config";
-import stripePackage from "stripe";
 import { Booking } from "../models/booking.js";
+import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
+import { House } from "../models/house.js";
+import { Yatch } from "../models/yatch.js";
+import { Car } from "../models/car.js";
 
-// Initialize Stripe with your secret key
-const stripe = new stripePackage(process.env.STRIPE_SECRET_KEY);
-
-export const createPayment = async (bookingId, currency) => {
-  try {
-    const booking = await Booking.findOne({ _id: bookingId });
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: booking.amount, // Amount in cents
-      currency: currency, // Currency code (e.g., 'usd')
-    });
-    return paymentIntent;
-  } catch (error) {
-    console.error("Error creating payment intent:", error);
-    throw error;
+export const successfulPayment = async (req, res) => {
+  const { bookingId } = req.params;
+  var booking = await Booking.findOne({ _id: bookingId });
+  if (!booking) {
+    throw new NotFoundError(`Booking with ${bookingId} not found`);
   }
+  booking = await Booking.findOneAndUpdat(
+    { _id: bookingId },
+    { paid: true },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 };
