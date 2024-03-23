@@ -1,7 +1,6 @@
 import { House, houseType } from "../models/house.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
-import { User } from "../models/user.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 
 export const allHouseTypes = async (req, res) => {
@@ -16,13 +15,13 @@ export const allHouses = async (req, res) => {
 
 export const currentUserHouses = async (req, res) => {
   const userId = req.user.userId;
-  const houses = await House.find({ user: userId }).sort("createdAt");;
+  const houses = await House.find({ user: userId }).sort("createdAt");
   res.status(StatusCodes.OK).json({ houses });
 };
 
 export const getHousesByTypes = async (req, res) => {
   const { typeId } = req.params;
-  const houses = await House.find({ houseType: typeId });;
+  const houses = await House.find({ houseType: typeId });
   res.status(StatusCodes.OK).json({ houses });
 };
 
@@ -101,4 +100,13 @@ export const getAvailableHouses = async (req, res) => {
   const { userId } = req.user;
   const houses = await House.find({ user: userId, dateAvailable: { $gte: currentDate } });
   res.status(StatusCodes.OK).json({ houses });
+};
+
+export const getHouseDetail = async (req, res) => {
+  const { houseId } = req.params;
+  const house = await House.findOne({ _id: houseId });
+  if (!house) {
+    throw new NotFoundError(`House with ${houseId} does not exist`);
+  }
+  res.status(StatusCodes.OK).json({ house });
 };

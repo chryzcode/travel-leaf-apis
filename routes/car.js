@@ -7,6 +7,7 @@ import {
   currentUserCars,
   getCarsByTypes,
   getAvailableCars,
+  getCarDetail,
 } from "../controllers/car.js";
 
 import authenticateUser from "../middleware/authentication.js";
@@ -18,6 +19,7 @@ router.route("/user-cars").get(authenticateUser, currentUserCars);
 router.route("/filter/:typeId").get(getCarsByTypes);
 router.route("/create").post(authenticateUser, createCar);
 router.route("/edit/:carId").put(authenticateUser, editCar);
+router.route("/:carId/detail").get(authenticateUser, getCarDetail);
 router.route("/car-types").get(allCarTypes);
 router.route("/available-car").get(authenticateUser, getAvailableCars);
 

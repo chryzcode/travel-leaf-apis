@@ -20,6 +20,10 @@ const houseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    location: {
+      type: String,
+      required: [true, "Please provide location"],
+    },
     houseType: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "houseType",
