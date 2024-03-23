@@ -22,7 +22,7 @@ router.route("/create").post(authenticateUser, createCar);
 router.route("/edit/:carId").put(authenticateUser, editCar);
 router.route("/:carId/detail").get(authenticateUser, getCarDetail);
 router.route("/car-types").get(allCarTypes);
-router.route("/available-car").get(authenticateUser, getAvailableCars);
-router.route("/booked-car").get(authenticateUser, getBookedCars);
+router.route("/available-cars").get(authenticateUser, getAvailableCars);
+router.route("/booked-cars").get(authenticateUser, getBookedCars);
 
 export default router;

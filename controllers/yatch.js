@@ -8,18 +8,18 @@ export const allYatchTypes = async (req, res) => {
   res.status(StatusCodes.OK).json({ types });
 };
 
-export const allYatch = async (req, res) => {
+export const allYatchs = async (req, res) => {
   const yatchs = await Yatch.find({}).sort("createdAt");
   res.status(StatusCodes.OK).json({ yatchs });
 };
 
-export const currentUserYatch = async (req, res) => {
+export const currentUserYatchs = async (req, res) => {
   const userId = req.user.userId;
   const yatch = await Yatch.find({ user: userId }).sort("createdAt");
   res.status(StatusCodes.OK).json({ yatch });
 };
 
-export const getYatchByTypes = async (req, res) => {
+export const getYatchsByTypes = async (req, res) => {
   const { typeId } = req.params;
   const yatch = await Yatch.find({ yatchType: typeId });
   res.status(StatusCodes.OK).json({ yatch });
@@ -95,13 +95,13 @@ export const editYatch = async (req, res) => {
   res.status(StatusCodes.OK).json({ yatch });
 };
 
-export const getAvailableYatch = async (req, res) => {
+export const getAvailableYatchs = async (req, res) => {
   const { userId } = req.user;
   const yatchs = await Yatch.find({ user: userId, available: true });
   res.status(StatusCodes.OK).json({ yatchs });
 };
 
-export const getBookedYatch = async (req, res) => {
+export const getBookedYatchs = async (req, res) => {
   const { userId } = req.user;
   const yatchs = await Yatch.find({ user: userId, booked: true });
   res.status(StatusCodes.OK).json({ yatchs });
