@@ -97,7 +97,7 @@ export const editCar = async (req, res) => {
 
 export const getAvailableCars = async (req, res) => {
   const { userId } = req.user;
-  const cars = await Car.find({ user: userId, available: true });
+  const cars = await Car.find({ user: userId, booked: false });
   res.status(StatusCodes.OK).json({ cars });
 };
 
@@ -109,10 +109,22 @@ export const getBookedCars = async (req, res) => {
 
 export const getCarDetail = async (req, res) => {
   const { carId } = req.params;
-  const car = await Car.findOne({ _id: carId });
+  var car = await Car.findOne({ _id: carId });
   if (!car) {
     throw new NotFoundError(`Car with ${carId} does not exist`);
   }
+  const currentDate = new Date();
+  if (currentDate > car.dateAvailable) {
+    car = await Car.findOneAndUpdate(
+      { _id: carId },
+      { booked: false },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+  }
+
   res.status(StatusCodes.OK).json({ car });
 };
 
@@ -122,6 +134,9 @@ export const deleteCar = async (req, res) => {
   const car = await Car.findOneAndDelete({ _id: carId, user: userId });
   if (!car) {
     throw new NotFoundError(`Car with ${carId} does not exist`);
+  }
+  if (car.booked == true) {
+    throw new UnauthenticatedError(`You can not deleted a booked car`);
   }
   res.status(StatusCodes.OK).send();
 };

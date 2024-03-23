@@ -97,7 +97,7 @@ export const editYatch = async (req, res) => {
 
 export const getAvailableYatchs = async (req, res) => {
   const { userId } = req.user;
-  const yatchs = await Yatch.find({ user: userId, available: true });
+  const yatchs = await Yatch.find({ user: userId, booked: false });
   res.status(StatusCodes.OK).json({ yatchs });
 };
 
@@ -122,6 +122,9 @@ export const deleteYatch = async (req, res) => {
   const yatch = await Yatch.findOneAndDelete({ _id: yatchId, user: userId });
   if (!yatch) {
     throw new NotFoundError(`Yatch with ${yatchId} does not exist`);
+  }
+  if (yatch.booked == true) {
+    throw new UnauthenticatedError(`You can not deleted a booked yatch`);
   }
   res.status(StatusCodes.OK).send();
 };

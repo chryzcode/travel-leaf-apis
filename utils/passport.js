@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import {User} from "../models/user.js";
+import { User } from "../models/user.js";
+import { Wallet } from "../models/payment.js";
 import bcrypt from "bcryptjs";
 
 async function hashPassword(password) {
@@ -35,7 +36,17 @@ passport.use(
       }
       const user = await User.findOne({ email: profile["emails"][0].value });
       var token = user.createJWT();
-      await User.findOneAndUpdate({ token: token });
+      await User.findOneAndUpdate(
+        { email: profile["emails"][0].value },
+        { token: token },
+        { runValidators: true, new: true }
+      );
+      const wallet = await Wallet.findOne({ user: this._id });
+      if (!wallet) {
+        await Wallet.create({
+          user: user._id,
+        });
+      }
       return done(null, user);
     }
   )

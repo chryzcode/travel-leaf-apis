@@ -41,6 +41,10 @@ const yatchSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    price: {
+      type: Number,
+      required: [true, "Please provide price"],
+    },
     media: ["Media"],
     description: {
       type: String,
@@ -48,13 +52,9 @@ const yatchSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      enum: ["USD"],
-      default: "USD",
-      required: [true, "Please provide currency, ex. USD"],
-    },
-    installmentalPayment: {
-      type: Boolean,
-      default: true,
+      enum: ["usd"],
+      default: "usd",
+      required: [true, "Please provide currency, ex. usd"],
     },
     features: [
       {

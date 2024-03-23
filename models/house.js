@@ -54,13 +54,13 @@ const houseSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      enum: ["USD"],
-      default: "USD",
-      required: [true, "Please provide currency, ex. USD"],
+      enum: ["usd"],
+      default: "usd",
+      required: [true, "Please provide currency, ex. usd"],
     },
-    installmentalPayment: {
-      type: Boolean,
-      default: true,
+    price: {
+      type: Number,
+      required: [true, "Please provide price"],
     },
     dateAvailable: {
       type: Date,
