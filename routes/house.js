@@ -22,6 +22,6 @@ router.route("/create").post(authenticateUser, createHouse);
 router.route("/edit/:houseId").put(authenticateUser, editHouse);
 router.route("/house-types").get(allHouseTypes);
 router.route("/:houseId/detail").get(authenticateUser, getHouseDetail);
-router.route("/available-house").get(authenticateUser, getAvailableHouses);
-router.route("/booked-house").get(authenticateUser, getBookedHouses);
+router.route("/available-houses").get(authenticateUser, getAvailableHouses);
+router.route("/booked-houses").get(authenticateUser, getBookedHouses);
 export default router;

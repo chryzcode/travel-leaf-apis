@@ -17,10 +17,10 @@ const yatchSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide name"],
     },
-    carType: {
+    yatchType: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "yatchType",
-      required: [true, "Please provide car type"],
+      required: [true, "Please provide yatch type"],
     },
     location: {
       type: String,
@@ -56,11 +56,6 @@ const yatchSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    negotiation: {
-      type: Boolean,
-      default: true,
-    },
-
     features: [
       {
         type: String,

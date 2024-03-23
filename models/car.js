@@ -64,11 +64,6 @@ const carSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    negotiation: {
-      type: Boolean,
-      default: true,
-    },
-
     features: [
       {
         type: String,

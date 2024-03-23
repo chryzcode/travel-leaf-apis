@@ -62,10 +62,6 @@ const houseSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    negotiation: {
-      type: Boolean,
-      default: true,
-    },
     dateAvailable: {
       type: Date,
       required: [true, "Please provide date"],
