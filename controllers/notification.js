@@ -19,12 +19,14 @@ export const createNotification = async (req, res) => {
     throw new NotFoundError(`Listing does not exists`);
   }
   req.body.toUser = listing.user;
+  req.body.listingId = listing.id;
   const currentDate = new Date();
+  console.log(currentDate);
   const eligibleBooking = await Booking.findOne({
     user: userId,
     listingId: listing.id,
     paid: true,
-    departure: { $lte: currentDate },
+    departure: { $gte: currentDate },
   });
   if (!eligibleBooking) {
     throw new UnauthenticatedError(`User is not eligible/ unauthorized to make notification to listing`);
@@ -33,7 +35,7 @@ export const createNotification = async (req, res) => {
   res.status(StatusCodes.CREATED).json({ notification });
 };
 
-export const getNotifications = async (req, res) => {
+export const getAllNotifications = async (req, res) => {
   const { userId } = req.user;
   const notifications = await Notification.find({ toUser: userId });
   res.status(StatusCodes.CREATED).json({ notifications });

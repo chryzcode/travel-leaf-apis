@@ -22,6 +22,8 @@ import carRouter from "./routes/car.js";
 import yatchRouter from "./routes/yatch.js";
 import bookingRouter from "./routes/booking.js";
 import paymentRouter from "./routes/payment.js";
+import notificationRouter from "./routes/notification.js";
+import ratingRouter from "./routes/rating.js";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -62,6 +64,8 @@ app.use("/car", carRouter);
 app.use("/yatch", yatchRouter);
 app.use("/booking", bookingRouter);
 app.use("/payment", paymentRouter);
+app.use("/rating", ratingRouter);
+app.use("/notification", notificationRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
