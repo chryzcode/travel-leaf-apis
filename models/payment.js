@@ -11,20 +11,25 @@ const walletSchema = mongoose.Schema({
   },
 });
 
-const paymentSchema = mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+const paymentSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    booking: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
+    },
+    paid: {
+      type: Boolean,
+      default: false,
+    },
   },
-  booking: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Booking",
-  },
-  paid: {
-    type: Boolean,
-    default: false,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const Wallet = mongoose.model("Wallet", walletSchema);
 const Payment = mongoose.model("Payment", paymentSchema);
