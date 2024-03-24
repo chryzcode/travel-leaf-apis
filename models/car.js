@@ -85,7 +85,7 @@ const carSchema = new mongoose.Schema(
 );
 
 carSchema.pre("save", async function () {
-  const taxAmount = this.price * 0.7;
+  const taxAmount = this.price * 7 /100;
   this.tax = taxAmount;
 });
 

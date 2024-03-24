@@ -38,7 +38,7 @@ export const createBooking = async (req, res) => {
   var booking = await Booking.create({ ...req.body });
   const successUrl = `${DOMAIN}/payment/${booking.id}/success`;
   const cancelUrl = `${DOMAIN}/payment/${booking.id}/cancel`;
-  const guestChargePercentage = 0.7;
+  const guestChargeAmount = amount * 7 / 100;
   const serviceFee = listing.serviceFee || 0;
   const cleaningFee = listing.cleaningFee || 0;
   const taxAmount = listing.tax || 0;
@@ -52,7 +52,7 @@ export const createBooking = async (req, res) => {
             product_data: {
               name: `Travel Leaf Booking Listing`, // Name of your product or service
             },
-            unit_amount: serviceFee + cleaningFee + taxAmount + guestChargePercentage * amount * 100, // Amount in cents
+            unit_amount: (amount + serviceFee + cleaningFee + taxAmount + guestChargeAmount) * 100, // Amount in cents
           },
           quantity: 1, // Quantity of the product
         },
