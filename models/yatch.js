@@ -61,16 +61,24 @@ const yatchSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    serviceFee: {
+      type: Number,
+      default: 0,
+    },
+    cleaningFee: {
+      type: Number,
+      default: 0,
+    },
+    tax: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );
 
 yatchSchema.pre("save", async function () {
-  const currentDate = new Date();
-  if (currentDate < this.dateAvailable) {
-    this.available = true;
-  }
-  this.available = false;
+  const taxAmount = this.price * 0.7;
+  this.tax = taxAmount;
 });
 
 const Yatch = mongoose.model("Yatch", yatchSchema);

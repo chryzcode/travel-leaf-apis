@@ -69,10 +69,25 @@ const carSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    serviceFee: {
+      type: Number,
+      default: 0,
+    },
+    cleaningFee: {
+      type: Number,
+      default: 0,
+    },
+    tax: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );
 
+carSchema.pre("save", async function () {
+  const taxAmount = this.price * 0.7;
+  this.tax = taxAmount;
+});
 
 const Car = mongoose.model("Car", carSchema);
 const carType = mongoose.model("carType", carTypeSchema);
