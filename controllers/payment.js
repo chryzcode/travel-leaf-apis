@@ -55,5 +55,5 @@ export const successfulPayment = async (req, res) => {
     booking: bookingId,
     paid: true,
   });
-  res.status(StatusCodes.OK).json({ payment: booking });
+  res.status(StatusCodes.OK).json({ booking, payment });
 };

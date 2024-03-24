@@ -28,15 +28,16 @@ export const createBooking = async (req, res) => {
     (await Yatch.findOne({ _id: listingId }));
 
   if (!listing || listing.booked == true) {
-    throw new NotFoundError(`Listing (either house, car or yatch with ${listingId} does not exist) or it has been booked`);
+    throw new NotFoundError(
+      `Listing (either house, car or yatch with ${listingId} does not exist) or it has been booked`
+    );
   }
-  console.log(listing.price * days);
   const amount = Number(listing.price * days);
   req.body.amount = amount;
   req.body.listingId = listing.id;
   var booking = await Booking.create({ ...req.body });
-  const successUrl = `${DOMAIN}/booking/${booking.id}/success`;
-  const cancelUrl = `${DOMAIN}/booking/${booking.id}/cancel`;
+  const successUrl = `${DOMAIN}/payment/${booking.id}/success`;
+  const cancelUrl = `${DOMAIN}/payment/${booking.id}/cancel`;
   const guestChargePercentage = 0.7;
   const serviceFee = listing.serviceFee || 0;
   const cleaningFee = listing.cleaningFee || 0;
@@ -51,7 +52,7 @@ export const createBooking = async (req, res) => {
             product_data: {
               name: `Travel Leaf Booking Listing`, // Name of your product or service
             },
-            unit_amount: serviceFee * cleaningFee + taxAmount * guestChargePercentage * amount * 100, // Amount in cents
+            unit_amount: serviceFee + cleaningFee + taxAmount + guestChargePercentage * amount * 100, // Amount in cents
           },
           quantity: 1, // Quantity of the product
         },
