@@ -71,17 +71,25 @@ const houseSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    tax: {
+      type: Number,
+    },
+    serviceFee: {
+      type: Number,
+      default: 0,
+    },
+    cleaningFee: {
+      type: Number,
+      default: 0,
+    },
     media: [mediaSchema],
   },
   { timestamps: true }
 );
 
 houseSchema.pre("save", async function () {
-  const currentDate = new Date();
-  if (currentDate < this.dateAvailable) {
-    this.available = true;
-  }
-  this.available = false;
+  const taxAmount = this.price * 0.7;
+  this.tax = taxAmount;
 });
 
 const House = mongoose.model("House", houseSchema);

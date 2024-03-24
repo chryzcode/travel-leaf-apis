@@ -42,13 +42,6 @@ app.get("/", (req, res) => {
   res.send(`Travel Leafs API`);
 });
 
-app.get("/cancel", (req, res) => {
-  res.send(`failed`);
-});
-
-app.get("/sucess", (req, res) => {
-  res.send(`successful`);
-});
 
 app.use(
   session({

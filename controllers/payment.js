@@ -1,20 +1,59 @@
-import "dotenv/config";
-import stripePackage from "stripe";
 import { Booking } from "../models/booking.js";
+import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
+import { House } from "../models/house.js";
+import { Yatch } from "../models/yatch.js";
+import { Car } from "../models/car.js";
+import { StatusCodes } from "http-status-codes";
+import { Payment } from "../models/payment.js";
 
-// Initialize Stripe with your secret key
-const stripe = new stripePackage(process.env.STRIPE_SECRET_KEY);
-
-export const createPayment = async (bookingId, currency) => {
-  try {
-    const booking = await Booking.findOne({ _id: bookingId });
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: booking.amount, // Amount in cents
-      currency: currency, // Currency code (e.g., 'usd')
-    });
-    return paymentIntent;
-  } catch (error) {
-    console.error("Error creating payment intent:", error);
-    throw error;
+export const successfulPayment = async (req, res) => {
+  const { userId } = req.user;
+  const { bookingId } = req.params;
+  const booking = await Booking.findOne(
+    { _id: bookingId },
+    { paid: true },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  if (!booking) {
+    throw new NotFoundError(`Booking with ${bookingId} not found`);
   }
+
+  var listing =
+    (await Car.findOneAndUpdate(
+      { _id: booking.listingId },
+      { dateAvailable: departure, booked: true },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )) ||
+    (await House.findOneAndUpdate(
+      { _id: booking.listingId },
+      { dateAvailable: departure, booked: true },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )) ||
+    (await Yatch.findOneAndUpdate(
+      { _id: booking.listingId },
+      { dateAvailable: departure, booked: true },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ));
+
+  if (!listing || listing.booked == true) {
+    throw new NotFoundError(`Listing (either house, car or yatch with ${booking.listingId} does not exist)`);
+  }
+  const payment = Payment.create({
+    user: userId,
+    booking: bookingId,
+    paid: true,
+  });
+  res.status(StatusCodes.OK).json({ payment: booking });
 };
