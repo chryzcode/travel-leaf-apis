@@ -1,11 +1,48 @@
+import "dotenv/config";
 import { Booking } from "../models/booking.js";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 import { House } from "../models/house.js";
 import { Yatch } from "../models/yatch.js";
 import { Car } from "../models/car.js";
 import { StatusCodes } from "http-status-codes";
-import { Payment } from "../models/payment.js";
-import { Wallet } from "../models/payment.js";
+import { Payment, Wallet } from "../models/payment.js";
+import stripePackage from "stripe";
+
+const stripe = new stripePackage(process.env.STRIPE_SECRET_KEY);
+
+export const walletPayout = async (req, res) => {
+  const { userId } = req.user;
+  const { bankId } = req.params;
+  const wallet = await Wallet.findOne({ user: userId });
+  const amount = req.body.amount;
+  if (amount > wallet.amount) {
+    throw new BadRequestError(`Insufficient funds`);
+  }
+  try {
+    const payout = await stripe.payouts.create({
+      amount: Number(amount) * 100, // amount in cents
+      currency: "usd", // adjust currency as needed
+      method: "standard",
+      destination: bankId,
+    });
+    console.log("Payout successful:", payout);
+    res.status(StatusCodes.OK).json({ payout });
+  } catch (error) {
+    console.error("Error:", error);
+    throw new BadRequestError(`Error in payout ${error}`);
+  }
+};
+
+export const cancelPayment = async (req, res) => {
+  const { userId } = req.user;
+  const { bookingId } = req.params;
+  const booking = await Booking.findOne({ _id: bookingId, user: userId });
+  if (!booking) {
+    throw new BadRequestError("You don not have booking or this booking is not yours");
+  }
+
+  res.status(StatusCodes.OK).json({ booking });
+};
 
 export const successfulPayment = async (req, res) => {
   const { userId } = req.user;
@@ -63,8 +100,9 @@ export const successfulPayment = async (req, res) => {
       });
     }
 
-    const hostCharge = listing.price * 0.3;
-    const amount = listing.price - hostCharge;
+    const hostCharge = (booking.amount * 3) / 100;
+    const amount = booking.amount - hostCharge;
+    console.log(amount, hostCharge);
     const wallet = await Wallet.findOne({ user: listing.user });
     await Wallet.findOneAndUpdate(
       { user: listing.user },
