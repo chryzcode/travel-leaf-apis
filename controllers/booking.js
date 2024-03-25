@@ -21,6 +21,7 @@ export const createBooking = async (req, res) => {
   var departure = new Date(arrival);
   departure = departure.setDate(arrival.getDate() + days);
   req.body.departure = departure;
+  const currentDate = new Date();
 
   var listing =
     (await Car.findOne({ _id: listingId })) ||
@@ -32,16 +33,20 @@ export const createBooking = async (req, res) => {
       `Listing (either house, car or yatch with ${listingId} does not exist) or it has been booked`
     );
   }
-  const amount = Number(listing.price * days);
+
+  if (currentDate < listing.dateAvailable) {
+    throw new BadRequestError(`Listing is not available for booking`);
+  }
+  const serviceFee = listing.serviceFee || 0;
+  const cleaningFee = listing.cleaningFee || 0;
+  const taxAmount = listing.tax || 0;
+  const amount = Number(listing.price * days) + serviceFee + cleaningFee;
   req.body.amount = amount;
   req.body.listingId = listing.id;
   var booking = await Booking.create({ ...req.body });
   const successUrl = `${DOMAIN}/payment/${booking.id}/success`;
   const cancelUrl = `${DOMAIN}/payment/${booking.id}/cancel`;
-  const guestChargeAmount = amount * 7 / 100;
-  const serviceFee = listing.serviceFee || 0;
-  const cleaningFee = listing.cleaningFee || 0;
-  const taxAmount = listing.tax || 0;
+  const guestChargeAmount = (amount * 7) / 100;
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"], // Payment method types accepted (e.g., card)
@@ -52,7 +57,7 @@ export const createBooking = async (req, res) => {
             product_data: {
               name: `Travel Leaf Booking Listing`, // Name of your product or service
             },
-            unit_amount: (amount + serviceFee + cleaningFee + taxAmount + guestChargeAmount) * 100, // Amount in cents
+            unit_amount: (amount + taxAmount + guestChargeAmount) * 100, // Amount in cents
           },
           quantity: 1, // Quantity of the product
         },
