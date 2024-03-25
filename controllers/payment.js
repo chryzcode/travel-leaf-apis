@@ -102,7 +102,6 @@ export const successfulPayment = async (req, res) => {
 
     const hostCharge = (booking.amount * 3) / 100;
     const amount = booking.amount - hostCharge;
-    console.log(amount, hostCharge);
     const wallet = await Wallet.findOne({ user: listing.user });
     await Wallet.findOneAndUpdate(
       { user: listing.user },
@@ -114,4 +113,29 @@ export const successfulPayment = async (req, res) => {
     );
     res.status(StatusCodes.OK).json({ booking, payment });
   }
+};
+
+export const getMonthlyIncome = async (req, res) => {
+  const { userId } = req.user;
+  const currentDate = new Date();
+  const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // Start of the current month
+  const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59); // End of the current month
+
+  const bookings = await Booking.find({
+    user: userId,
+    createdAt: {
+      $gte: startOfMonth,
+      $lte: endOfMonth,
+    },
+  });
+  let income = 0;
+  if (bookings) {
+    bookings.forEach(booking => {
+      income += booking.amount;
+    });
+  }
+
+  const wallet = await Wallet.findOne({ user: userId });
+  const percentage = (income / wallet.amount) * 100;
+  res.status(StatusCodes.OK).json({ monthly_income: income, percentage: percentage });
 };
