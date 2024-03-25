@@ -128,7 +128,6 @@ export const getMonthlyIncome = async (req, res) => {
       $lte: endOfMonth,
     },
   });
-  console.log(bookings);
   let income = 0;
   if (bookings) {
     bookings.forEach(booking => {
