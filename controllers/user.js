@@ -9,7 +9,7 @@ import bcrypt from "bcryptjs";
 import { Wallet } from "../models/payment.js";
 
 const uniqueID = uuidv4();
-const domain = process.env.DOMAIN || "http://127.0.0.1:8000";
+const domain = process.env.DOMAIN || "http://localhost:8000";
 
 const linkVerificationtoken = generateToken(uniqueID);
 
