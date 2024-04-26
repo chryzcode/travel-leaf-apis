@@ -42,7 +42,9 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send(`Travel Leafs API`);
+  res.send(
+    `Travel Leaf API <p>Checkout the <a href="https://documenter.getpostman.com/view/31014226/2sA35K1LDs">Travel Leaf API Documentation</a></p>`
+  );
 });
 
 
