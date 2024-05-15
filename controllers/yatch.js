@@ -9,19 +9,27 @@ export const allYatchTypes = async (req, res) => {
 };
 
 export const allYatchs = async (req, res) => {
-  const yatchs = await Yatch.find({}).sort("createdAt");
+  const yatchs = await Yatch.find({})
+    .sort("createdAt")
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
   res.status(StatusCodes.OK).json({ yatchs });
 };
 
 export const currentUserYatchs = async (req, res) => {
   const userId = req.user.userId;
-  const yatch = await Yatch.find({ user: userId }).sort("createdAt");
+  const yatch = await Yatch.find({ user: userId })
+    .sort("createdAt")
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
   res.status(StatusCodes.OK).json({ yatch });
 };
 
 export const getYatchsByTypes = async (req, res) => {
   const { typeId } = req.params;
-  const yatch = await Yatch.find({ yatchType: typeId });
+  const yatch = await Yatch.find({ yatchType: typeId })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
   res.status(StatusCodes.OK).json({ yatch });
 };
 
@@ -50,7 +58,9 @@ export const createYatch = async (req, res) => {
       }
     }
   }
-  const yatch = await Yatch.create({ ...req.body });
+  const yatch = await Yatch.create({ ...req.body })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
   res.status(StatusCodes.OK).json({ yatch });
 };
 
@@ -90,26 +100,34 @@ export const editYatch = async (req, res) => {
   yatch = await Yatch.findOneAndUpdate({ _id: yatchId, user: userId }, req.body, {
     new: true,
     runValidators: true,
-  });
+  })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
 
   res.status(StatusCodes.OK).json({ yatch });
 };
 
 export const getAvailableYatchs = async (req, res) => {
   const { userId } = req.user;
-  const yatchs = await Yatch.find({ user: userId, booked: false });
+  const yatchs = await Yatch.find({ user: userId, booked: false })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
   res.status(StatusCodes.OK).json({ yatchs });
 };
 
 export const getBookedYatchs = async (req, res) => {
   const { userId } = req.user;
-  const yatchs = await Yatch.find({ user: userId, booked: true });
+  const yatchs = await Yatch.find({ user: userId, booked: true })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
   res.status(StatusCodes.OK).json({ yatchs });
 };
 
 export const getYatchDetail = async (req, res) => {
   const { yatchId } = req.params;
-  const yatch = await Yatch.findOne({ _id: yatchId });
+  const yatch = await Yatch.findOne({ _id: yatchId })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("yatchType", "name _id");
   if (!yatch) {
     throw new NotFoundError(`Car with ${yatchId} does not exist`);
   }
