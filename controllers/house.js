@@ -9,7 +9,10 @@ export const allHouseTypes = async (req, res) => {
 };
 
 export const allHouses = async (req, res) => {
-  const houses = await House.find({}).sort("createdAt").populate("user", "fullName avatar username userType _id");
+  const houses = await House.find({})
+    .sort("createdAt")
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
   res.status(StatusCodes.OK).json({ houses });
 };
 
@@ -17,13 +20,16 @@ export const currentUserHouses = async (req, res) => {
   const userId = req.user.userId;
   const houses = await House.find({ user: userId })
     .sort("createdAt")
-    .populate("user", "fullName avatar username userType _id");
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
   res.status(StatusCodes.OK).json({ houses });
 };
 
 export const getHousesByTypes = async (req, res) => {
   const { typeId } = req.params;
-  const houses = await House.find({ houseType: typeId }).populate("user", "fullName avatar username userType _id");
+  const houses = await House.find({ houseType: typeId })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
   res.status(StatusCodes.OK).json({ houses });
 };
 
@@ -52,7 +58,9 @@ export const createHouse = async (req, res) => {
       }
     }
   }
-  const house = await House.create({ ...req.body }).populate("user", "fullName avatar username userType _id");
+  const house = await House.create({ ...req.body })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
   res.status(StatusCodes.OK).json({ house });
 };
 
@@ -92,26 +100,26 @@ export const editHouse = async (req, res) => {
   house = await House.findOneAndUpdate({ _id: houseId, user: userId }, req.body, {
     new: true,
     runValidators: true,
-  }).populate("user", "fullName avatar username userType _id");
+  })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
 
   res.status(StatusCodes.OK).json({ house });
 };
 
 export const getAvailableHouses = async (req, res) => {
   const { userId } = req.user;
-  const houses = await House.find({ user: userId, booked: false }).populate(
-    "user",
-    "fullName avatar username userType _id"
-  );
+  const houses = await House.find({ user: userId, booked: false })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
   res.status(StatusCodes.OK).json({ houses });
 };
 
 export const getBookedHouses = async (req, res) => {
   const { userId } = req.user;
-  const houses = await House.find({ user: userId, booked: true }).populate(
-    "user",
-    "fullName avatar username userType _id"
-  );
+  const houses = await House.find({ user: userId, booked: true })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
   res.status(StatusCodes.OK).json({ houses });
 };
 
@@ -121,7 +129,11 @@ export const getHouseDetail = async (req, res) => {
   if (!house) {
     throw new NotFoundError(`House with ${houseId} does not exist`);
   }
-  res.status(StatusCodes.OK).json({ house }).populate("user", "fullName avatar username userType _id");
+  res
+    .status(StatusCodes.OK)
+    .json({ house })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("houseType", "name _id");
 };
 
 export const deleteHouse = async (req, res) => {
