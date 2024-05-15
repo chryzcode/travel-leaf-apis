@@ -52,8 +52,8 @@ router.route("/auth/logout").post(authenticateUser, logout);
 router.route("/update").put(authenticateUser, updateUser);
 router.route("/delete").delete(authenticateUser, deleteUser);
 router.route("/send-forgot-password-link").post(sendForgotPasswordLink);
-router.route("/auth/forgot-password/:userId/:token").post(verifyForgotPasswordToken);
-router.route("/auth/verify-account/:userId/:token").post(verifyAccount);
+router.route("/auth/forgot-password/:userId/:token").get(verifyForgotPasswordToken);
+router.route("/auth/verify-account/:userId/:token").get(verifyAccount);
 router.route("/switch/host").post(authenticateUser, changeUserToHost);
 router.route("/switch/guest").post(authenticateUser, changeUserToGuest);
 

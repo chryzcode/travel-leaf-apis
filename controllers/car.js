@@ -9,19 +9,27 @@ export const allCarTypes = async (req, res) => {
 };
 
 export const allCars = async (req, res) => {
-  const cars = await Car.find({}).sort("createdAt");
+  const cars = await Car.find({})
+    .sort("createdAt")
+    .populate("user", "fullName avatar username userType _id")
+    .populate("carType", "name _id");
   res.status(StatusCodes.OK).json({ cars });
 };
 
 export const currentUserCars = async (req, res) => {
   const userId = req.user.userId;
-  const cars = await Car.find({ user: userId }).sort("createdAt");
+  const cars = await Car.find({ user: userId })
+    .sort("createdAt")
+    .populate("user", "fullName avatar username userType _id")
+    .populate("carType", "name _id");
   res.status(StatusCodes.OK).json({ cars });
 };
 
 export const getCarsByTypes = async (req, res) => {
   const { typeId } = req.params;
-  const cars = await Car.find({ carType: typeId });
+  const cars = await Car.find({ carType: typeId })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("carType", "name _id");
   res.status(StatusCodes.OK).json({ cars });
 };
 
@@ -50,7 +58,9 @@ export const createCar = async (req, res) => {
       }
     }
   }
-  const car = await Car.create({ ...req.body });
+  const car = await Car.create({ ...req.body })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("carType", "name _id");
   res.status(StatusCodes.OK).json({ car });
 };
 
@@ -90,20 +100,26 @@ export const editCar = async (req, res) => {
   car = await Car.findOneAndUpdate({ _id: carId, user: userId }, req.body, {
     new: true,
     runValidators: true,
-  });
+  })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("carType", "name _id");
 
   res.status(StatusCodes.OK).json({ car });
 };
 
 export const getAvailableCars = async (req, res) => {
   const { userId } = req.user;
-  const cars = await Car.find({ user: userId, booked: false });
+  const cars = await Car.find({ user: userId, booked: false })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("carType", "name _id");
   res.status(StatusCodes.OK).json({ cars });
 };
 
 export const getBookedCars = async (req, res) => {
   const { userId } = req.user;
-  const cars = await Car.find({ user: userId, booked: true });
+  const cars = await Car.find({ user: userId, booked: true })
+    .populate("user", "fullName avatar username userType _id")
+    .populate("carType", "name _id");
   res.status(StatusCodes.OK).json({ cars });
 };
 
@@ -122,7 +138,9 @@ export const getCarDetail = async (req, res) => {
         new: true,
         runValidators: true,
       }
-    );
+    )
+      .populate("user", "fullName avatar username userType _id")
+      .populate("carType", "name _id");
   }
 
   res.status(StatusCodes.OK).json({ car });
