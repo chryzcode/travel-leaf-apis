@@ -41,7 +41,7 @@ export const cancelPayment = async (req, res) => {
     throw new BadRequestError("You don not have booking or this booking is not yours");
   }
 
-  res.status(StatusCodes.OK).json({ booking });
+  res.status(StatusCodes.OK).json({ success: "payment process cancelled" });
 };
 
 export const successfulPayment = async (req, res) => {
@@ -57,7 +57,7 @@ export const successfulPayment = async (req, res) => {
         new: true,
         runValidators: true,
       }
-    );
+    ).populate("user", "fullName avatar username userType _id");
     if (!booking) {
       throw new NotFoundError(`Booking with ${bookingId} not found`);
     }
@@ -99,7 +99,10 @@ export const successfulPayment = async (req, res) => {
         paid: true,
       });
     }
-
+    payment = await Payment.findOne({ user: userId, booking: bookingId, paid: true }).populate(
+      "user",
+      "fullName avatar username userType _id"
+    );
     const hostCharge = (booking.amount * 3) / 100;
     const amount = booking.amount - hostCharge;
     const wallet = await Wallet.findOne({ user: listing.user });

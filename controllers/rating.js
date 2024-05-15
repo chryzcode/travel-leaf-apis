@@ -23,7 +23,7 @@ export const createRating = async (req, res) => {
     throw new UnauthenticatedError(`User is not eligible/ unauthorized to rate listing`);
   }
   req.body.listingId = listing.id;
-  const rating = await Rating.create({ ...req.body });
+  const rating = await Rating.create({ ...req.body }).populate("user", "fullName avatar username userType _id");
   res.status(StatusCodes.CREATED).json({ rating });
 };
 
@@ -37,6 +37,9 @@ export const allListingRatings = async (req, res) => {
   if (!listing) {
     throw new NotFoundError(`Listing does not exists`);
   }
-  const ratings = await Rating.find({ listingId: listing.id });
+  const ratings = await Rating.find({ listingId: listing.id }).populate(
+    "user",
+    "fullName avatar username userType _id"
+  );
   res.status(StatusCodes.OK).json({ ratings });
 };
