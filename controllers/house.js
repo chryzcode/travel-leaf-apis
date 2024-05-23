@@ -2,6 +2,7 @@ import { House, houseType } from "../models/house.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
+import notFound from "../middleware/not-found.js";
 
 export const allHouseTypes = async (req, res) => {
   const types = await houseType.find({});
@@ -38,11 +39,8 @@ export const createHouse = async (req, res) => {
   const media = req.body.media;
   var type = await houseType.findOne({ name: req.body.houseType });
   if (!type) {
-    await houseType.create({
-      name: req.body.houseType,
-    });
+    throw NotFoundError(`House type does not exist`);
   }
-  type = await houseType.findOne({ name: req.body.houseType });
   req.body.houseType = type.id;
   if (media) {
     for (let i = 0; i < media.length; i++) {
@@ -58,7 +56,8 @@ export const createHouse = async (req, res) => {
       }
     }
   }
-  const house = await House.create({ ...req.body })
+  let house = await House.create({ ...req.body });
+  house = await House.findOne({ _id: house._id })
     .populate("user", "fullName avatar username userType _id")
     .populate("houseType", "name _id");
   res.status(StatusCodes.OK).json({ house });
@@ -71,11 +70,8 @@ export const editHouse = async (req, res) => {
 
   var type = await houseType.findOne({ name: req.body.houseType });
   if (!type) {
-    await houseType.create({
-      name: req.body.houseType,
-    });
+    throw NotFoundError(`House type does not exist`);
   }
-  type = await houseType.findOne({ name: req.body.houseType });
   req.body.houseType = type.id;
 
   var house = await House.findOne({ _id: houseId, user: userId });
