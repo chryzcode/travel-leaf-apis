@@ -38,11 +38,8 @@ export const createCar = async (req, res) => {
   const media = req.body.media;
   var type = await carType.findOne({ name: req.body.carType });
   if (!type) {
-    await carType.create({
-      name: req.body.carType,
-    });
+    throw NotFoundError(`Car type does not exist`);
   }
-  type = await carType.findOne({ name: req.body.carType });
   req.body.carType = type.id;
   if (media) {
     for (let i = 0; i < media.length; i++) {
@@ -58,7 +55,8 @@ export const createCar = async (req, res) => {
       }
     }
   }
-  const car = await Car.create({ ...req.body })
+  let car = await Car.create({ ...req.body });
+  car = await Car.findOne({ _id: car._id })
     .populate("user", "fullName avatar username userType _id")
     .populate("carType", "name _id");
   res.status(StatusCodes.OK).json({ car });
@@ -71,11 +69,9 @@ export const editCar = async (req, res) => {
 
   var type = await carType.findOne({ name: req.body.carType });
   if (!type) {
-    await carType.create({
-      name: req.body.carType,
-    });
+    throw NotFoundError(`House type does not exist`);
   }
-  type = await carType.findOne({ name: req.body.carType });
+
   req.body.carType = type.id;
 
   var car = await Car.findOne({ _id: carId, user: userId });
