@@ -69,11 +69,9 @@ export const editCar = async (req, res) => {
 
   var type = await carType.findOne({ name: req.body.carType });
   if (!type) {
-    await carType.create({
-      name: req.body.carType,
-    });
+    throw NotFoundError(`House type does not exist`);
   }
-  type = await carType.findOne({ name: req.body.carType });
+
   req.body.carType = type.id;
 
   var car = await Car.findOne({ _id: carId, user: userId });

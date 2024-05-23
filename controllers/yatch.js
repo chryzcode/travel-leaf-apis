@@ -38,11 +38,8 @@ export const createYatch = async (req, res) => {
   const media = req.body.media;
   var type = await yatchType.findOne({ name: req.body.yatchType });
   if (!type) {
-    await yatchType.create({
-      name: req.body.yatchType,
-    });
+    throw NotFoundError(`Yatch type does not exist`);
   }
-  type = await yatchType.findOne({ name: req.body.yatchType });
   req.body.yatchType = type.id;
   if (media) {
     for (let i = 0; i < media.length; i++) {
@@ -58,7 +55,8 @@ export const createYatch = async (req, res) => {
       }
     }
   }
-  const yatch = await Yatch.create({ ...req.body })
+  let yatch = await Yatch.create({ ...req.body });
+  yatch = await Yatch.findOne({ _id: yatch._id })
     .populate("user", "fullName avatar username userType _id")
     .populate("yatchType", "name _id");
   res.status(StatusCodes.OK).json({ yatch });
@@ -71,11 +69,8 @@ export const editYatch = async (req, res) => {
 
   var type = await yatchType.findOne({ name: req.body.yatchType });
   if (!type) {
-    await yatchType.create({
-      name: req.body.yatchType,
-    });
+    throw NotFoundError(`Yatch type does not exist`);
   }
-  type = await yatchType.findOne({ name: req.body.yatchType });
   req.body.yatchType = type.id;
 
   var yatch = await Yatch.findOne({ _id: yatchId, user: userId });
