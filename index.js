@@ -41,6 +41,35 @@ app.use(helmet());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
+// Define a whitelist of allowed origins
+const whitelist = ["http://localhost:3000", "https://travel-leaf.vercel.app"];
+
+// Define the CORS options
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
+  credentials: true,
+};
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", `http://localhost:3000, https://travel-leaf.vercel.app`);
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  // Pass to next layer of middleware
+  next();
+});
+
+// Enable CORS with the specified options
+app.use(cors(corsOptions));
+
 app.get("/", (req, res) => {
   res.send(
     `Travel Leaf API <p>Checkout the <a href="https://documenter.getpostman.com/view/31014226/2sA35K1LDs">Travel Leaf API Documentation</a></p>`
