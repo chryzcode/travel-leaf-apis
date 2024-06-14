@@ -37,6 +37,10 @@ const houseSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Please provide number of kitchens"],
     },
+    numberOfBeds: {
+      type: Number,
+      required: [true, "Please provide number of kitchens"],
+    },
     numberOfBathrooms: {
       type: Number,
       required: [true, "Please provide number of bathrooms"],
