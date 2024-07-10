@@ -41,12 +41,12 @@ export const getCarsByTypes = async (req, res) => {
 export const createCar = async (req, res) => {
   req.body.user = req.user.userId;
   const media = req.files;
+  const img = [];
   var type = await carType.findOne({ name: req.body.carType });
   if (!type) {
     throw NotFoundError(`Car type does not exist`);
   }
   req.body.carType = type.id;
-  const img = [];
   if (media) {
     for (let i = 0; i < media.length; i++) {
       try {
