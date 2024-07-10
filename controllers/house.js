@@ -1,8 +1,13 @@
 import { House, houseType } from "../models/house.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
+import {
+  BadRequestError,
+  UnauthenticatedError,
+  NotFoundError,
+} from "../errors/index.js";
 import notFound from "../middleware/not-found.js";
+const fs = require("fs");
 
 export const allHouseTypes = async (req, res) => {
   const types = await houseType.find({});
@@ -36,27 +41,34 @@ export const getHousesByTypes = async (req, res) => {
 
 export const createHouse = async (req, res) => {
   req.body.user = req.user.userId;
-  const media = req.body.media;
+  const media = req.files;
   var type = await houseType.findOne({ name: req.body.houseType });
   if (!type) {
     throw NotFoundError(`House type does not exist`);
   }
   req.body.houseType = type.id;
+  const img = [];
   if (media) {
     for (let i = 0; i < media.length; i++) {
       try {
-        const result = await cloudinary.v2.uploader.upload(media[i].url, {
+        const result = await cloudinary.v2.uploader.upload(media[i].path, {
           folder: "Trave-Leaf/House/Media/",
           use_filename: true,
         });
-        media[i].url = result.url; // Replace media URL w
+        img.push({
+          url: result.url,
+        });
+        //media[i].url = result.url; // Replace media URL w
+        fs.unlinkSync(media[i].path);
       } catch (error) {
         console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        throw new BadRequestError({
+          "error uploading image on cloudinary": error,
+        });
       }
     }
   }
-  let house = await House.create({ ...req.body });
+  let house = await House.create({ ...req.body, media: img });
   house = await House.findOne({ _id: house._id })
     .populate("user", "fullName avatar username userType _id")
     .populate("houseType", "name _id");
@@ -88,15 +100,21 @@ export const editHouse = async (req, res) => {
         media[i].url = result.url; // Replace media URL w
       } catch (error) {
         console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        throw new BadRequestError({
+          "error uploading image on cloudinary": error,
+        });
       }
     }
   }
 
-  house = await House.findOneAndUpdate({ _id: houseId, user: userId }, req.body, {
-    new: true,
-    runValidators: true,
-  })
+  house = await House.findOneAndUpdate(
+    { _id: houseId, user: userId },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
     .populate("user", "fullName avatar username userType _id")
     .populate("houseType", "name _id");
 

@@ -1,4 +1,5 @@
 import express from "express";
+import upload from "../middleware/multer.js";
 import {
   createCar,
   editCar,
@@ -19,7 +20,7 @@ const router = express.Router();
 router.route("/").get(allCars);
 router.route("/user-cars").get(authenticateUser, currentUserCars);
 router.route("/filter/:typeId").get(getCarsByTypes);
-router.route("/create").post(authenticateUser, createCar);
+router.route("/create").post(authenticateUser, upload, createCar);
 router.route("/edit/:carId").put(authenticateUser, editCar);
 router.route("/:carId/detail").get(authenticateUser, getCarDetail);
 router.route("/car-types").get(allCarTypes);
