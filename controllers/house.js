@@ -43,7 +43,6 @@ export const createHouse = async (req, res) => {
   req.body.user = req.user.userId;
   const media = req.files;
   const img = [];
-
   var type = await houseType.findOne({ name: req.body.houseType });
   if (!type) {
     throw NotFoundError(`House type does not exist`);
