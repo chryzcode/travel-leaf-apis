@@ -42,7 +42,7 @@ app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 
 // Define a whitelist of allowed origins
-const whitelist = ["http://localhost:3000", "https://travel-leaf.vercel.app", "https://travle-leaf.onrender.com"];
+const whitelist = [ "https://travle-leaf.onrender.com"];
 
 // Define the CORS options
 const corsOptions = {
