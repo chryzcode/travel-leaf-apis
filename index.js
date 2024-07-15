@@ -42,7 +42,7 @@ app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 
 // Define a whitelist of allowed origins
-const whitelist = ['http://localhost:3000', 'https://travel-leaf.vercel.app', "https://travle-leaf.onrender.com"];
+const whitelist = ['http://localhost:3000', "https://travle-leaf.onrender.com"];
 
 // Define the CORS options
 const corsOptions = {
@@ -61,7 +61,7 @@ const corsOptions = {
 app.use((req, res, next) => {
   res.header(
     "Access-Control-Allow-Origin",
-    `http://localhost:3000, https://travel-leaf.vercel.app, https://travle-leaf.onrender.com`
+    `http://localhost:3000, https://travle-leaf.onrender.com`
   );
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
