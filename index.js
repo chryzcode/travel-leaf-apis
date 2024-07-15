@@ -61,7 +61,7 @@ const corsOptions = {
 app.use((req, res, next) => {
   res.header(
     "Access-Control-Allow-Origin",
-    `http://localhost:3000, https://travel-leaf.vercel.app, https://travle-leaf.onrender.com`
+    `https://travle-leaf.onrender.com`
   );
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
