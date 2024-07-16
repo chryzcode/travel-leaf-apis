@@ -11,7 +11,7 @@ export default async (req, res, next) => {
   const token = authHeader.split(" ")[1];
   const user = await User.findOne({ token: token });
 
-  if (user) {
+ /* if (user) {
     req.user = { userId: user._Id, firstName: user.firstName };
     /*if (!user.verified) {
       try {
@@ -28,5 +28,6 @@ export default async (req, res, next) => {
     }*/
   } else {
     throw new UnauthenticatedError("Authentication invalid");
-  }
+  }*/
+  next()
 };
