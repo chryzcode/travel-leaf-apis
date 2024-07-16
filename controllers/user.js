@@ -150,10 +150,10 @@ export const signIn = async (req, res) => {
       "Account is not verified, kindly check your mail for verfication"
     );
   }
-  const token = jwt.sign(user, process.env.JWT_SECRET, {
-    expiresIn: "5d",
-  });
-  //var token = user.createJWT();
+  //const token = jwt.sign(user, process.env.JWT_SECRET, {
+    //expiresIn: "5d",
+  //});
+  var token = user.createJWT();
   await User.findOneAndUpdate({ token: token });
   token = user.token;
   res.status(StatusCodes.OK).json({ user: { fullName: user.fullName }, token });
