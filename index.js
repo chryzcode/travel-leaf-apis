@@ -38,11 +38,11 @@ app.use(
 
 app.use(express.json());
 app.use(helmet());
-//app.use(cors());
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 // Define a whitelist of allowed origins
-const whitelist = ['http://localhost:3000', "https://travle-leaf.onrender.com"];
+const whitelist = ["http://localhost:3000", "https://travle-leaf.onrender.com"];
 
 // Define the CORS options
 const corsOptions = {
