@@ -6,7 +6,7 @@ import {
   UnauthenticatedError,
   NotFoundError,
 } from "../errors/index.js";
-const fs = require("fs");
+import fs from "fs";
 
 export const allYatchTypes = async (req, res) => {
   const types = await yatchType.find({});
