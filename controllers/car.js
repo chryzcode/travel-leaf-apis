@@ -6,7 +6,7 @@ import {
   UnauthenticatedError,
   NotFoundError,
 } from "../errors/index.js";
-const fs = require("fs");
+import fs from "fs";
 
 export const allCarTypes = async (req, res) => {
   const types = await carType.find({});
