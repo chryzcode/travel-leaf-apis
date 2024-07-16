@@ -4,6 +4,6 @@ import authenticateUser from "../middleware/authentication.js";
 
 const router = express.Router();
 
-router.route("/create/:listingId").post( createBooking);
+router.route("/create/:listingId").post(authenticateUser, createBooking);
 
 export default router;
