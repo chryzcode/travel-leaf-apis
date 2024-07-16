@@ -43,10 +43,10 @@ export const signUp = async (req, res) => {
     }
     res.status(StatusCodes.OK).send();
   });
-  const token = jwt.sign(user, process.env.JWT_SECRET, {
-    expiresIn: "5d",
-  });
-  //const token = user.createJWT();
+  //const token = jwt.sign(user, process.env.JWT_SECRET, {
+    //expiresIn: "5d",
+  //});
+  const token = user.createJWT();
   const wallet = await Wallet.findOne({ user: user.id });
   if (!wallet) {
     await Wallet.create({
@@ -150,11 +150,11 @@ export const signIn = async (req, res) => {
       "Account is not verified, kindly check your mail for verfication"
     );
   }
-  const token = jwt.sign(user, process.env.JWT_SECRET, {
-    expiresIn: "5d",
-  });
+  //const token = jwt.sign(user, process.env.JWT_SECRET, {
+    //expiresIn: "5d",
+ // });
   console.log(token)
-  //var token = user.createJWT();
+  const token = user.createJWT();
   await User.findOneAndUpdate({ token: token });
   token = user.token;
   res.status(StatusCodes.OK).json({ user: { fullName: user.fullName }, token });
