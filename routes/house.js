@@ -1,6 +1,6 @@
 import express from "express";
-import upload from "../middleware/multer.js";
-import {
+//import upload from "../middleware/multer.js";
+const upload = require("../middleware/multer.js")import {
   createHouse,
   editHouse,
   allHouseTypes,
