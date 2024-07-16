@@ -154,7 +154,7 @@ export const signIn = async (req, res) => {
     //expiresIn: "5d",
  // });
   //console.log(token)
-  const token = user.createJWT();
+  var token = user.createJWT();
   await User.findOneAndUpdate({ token: token });
   token = user.token;
   res.status(StatusCodes.OK).json({ user: { fullName: user.fullName }, token });
