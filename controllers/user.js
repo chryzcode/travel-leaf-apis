@@ -153,7 +153,7 @@ export const signIn = async (req, res) => {
   //const token = jwt.sign(user, process.env.JWT_SECRET, {
     //expiresIn: "5d",
  // });
-  console.log(token)
+  //console.log(token)
   const token = user.createJWT();
   await User.findOneAndUpdate({ token: token });
   token = user.token;
