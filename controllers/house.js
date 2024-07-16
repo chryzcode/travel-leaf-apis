@@ -7,7 +7,7 @@ import {
   NotFoundError,
 } from "../errors/index.js";
 import notFound from "../middleware/not-found.js";
-const fs = require("fs");
+import fs from "fs"
 
 export const allHouseTypes = async (req, res) => {
   const types = await houseType.find({});
