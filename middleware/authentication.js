@@ -12,7 +12,8 @@ export default async (req, res, next) => {
   const user = await User.findOne({ token: token });
 
   if (user) {
-    if (!user.verified) {
+    req.user = { userId: user._Id, firstName: user.firstName };
+    /*if (!user.verified) {
       try {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         // attach the user to the job routes
@@ -24,7 +25,7 @@ export default async (req, res, next) => {
       }
     } else {
       res.status(403);
-    }
+    }*/
   } else {
     throw new UnauthenticatedError("Authentication invalid");
   }
