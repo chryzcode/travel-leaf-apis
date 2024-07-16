@@ -155,7 +155,7 @@ export const signIn = async (req, res) => {
  // });
   //console.log(token)
   var token = user.createJWT();
-  await User.findOneAndUpdate({ token: token });
+  await User.findOneAndUpdate({_id: user._id},{ token: token });
   token = user.token;
   res.status(StatusCodes.OK).json({ user: { fullName: user.fullName }, token });
 };
