@@ -1,4 +1,7 @@
 import express from "express";
+import upload from "../middleware/multer.js";
+//const upload = require("../middleware/multer.js")
+  
 import {
   createHouse,
   editHouse,
@@ -19,7 +22,7 @@ const router = express.Router();
 router.route("/").get(allHouses);
 router.route("/user-houses").get(authenticateUser, currentUserHouses);
 router.route("/filter/:typeId").get(getHousesByTypes);
-router.route("/create").post(authenticateUser, createHouse);
+router.route("/create").post(authenticateUser, upload, createHouse);
 router.route("/edit/:houseId").put(authenticateUser, editHouse);
 router.route("/house-types").get(allHouseTypes);
 router.route("/:houseId/detail").get(authenticateUser, getHouseDetail);

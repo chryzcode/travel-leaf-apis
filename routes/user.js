@@ -13,6 +13,7 @@ import {
   contactUs,
   changeUserToHost,
   changeUserToGuest,
+  sendEmail,
 } from "../controllers/user.js";
 
 import authenticateUser from "../middleware/authentication.js";
@@ -37,9 +38,13 @@ router.get(
   }),
   (req, res) => {
     if (!req.user) {
-      res.status(StatusCodes.BAD_REQUEST).json({ error: "Authentication failed" });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Authentication failed" });
     }
-    res.status(StatusCodes.OK).json({ user: { fullName: req.user.fullName }, token: req.user.token });
+    res
+      .status(StatusCodes.OK)
+      .json({ user: { fullName: req.user.fullName }, token: req.user.token });
   }
 );
 
@@ -52,9 +57,12 @@ router.route("/auth/logout").post(authenticateUser, logout);
 router.route("/update").put(authenticateUser, updateUser);
 router.route("/delete").delete(authenticateUser, deleteUser);
 router.route("/send-forgot-password-link").post(sendForgotPasswordLink);
-router.route("/auth/forgot-password/:userId/:token").get(verifyForgotPasswordToken);
+router
+  .route("/auth/forgot-password/:userId/:token")
+  .get(verifyForgotPasswordToken);
 router.route("/auth/verify-account/:userId/:token").get(verifyAccount);
 router.route("/switch/host").post(authenticateUser, changeUserToHost);
 router.route("/switch/guest").post(authenticateUser, changeUserToGuest);
+router.route("/sendemail").get(authenticateUser, sendEmail);
 
 export default router;

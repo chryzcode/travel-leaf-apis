@@ -9,18 +9,25 @@ export default async (req, res, next) => {
     throw new UnauthenticatedError("Token does not start with Bearer");
   }
   const token = authHeader.split(" ")[1];
-  const user = await User.findOne({ token: token, verified: true });
-  if (user) {
-    try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET);
-      // attach the user to the job routes
-      req.user = { userId: payload.userId, firstName: payload.firstName };
+  const user = await User.findOne({ token: token });
 
-      next();
-    } catch (error) {
-      throw new UnauthenticatedError("Authentication invalid");
+ if (user) {
+    req.user = { userId: user._Id, firstName: user.firstName };
+    if (!user.verified) {
+      try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        // attach the user to the job routes
+        req.user = { userId: payload.userId, firstName: payload.firstName };
+
+        next();
+      } catch (error) {
+        throw new UnauthenticatedError("Authentication invalid");
+      }
+    } else {
+      res.status(403);
     }
   } else {
     throw new UnauthenticatedError("User does not exist or not verified");
   }
+  next()
 };

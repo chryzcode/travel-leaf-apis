@@ -1,7 +1,12 @@
 import { yatchType, Yatch } from "../models/yatch.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
+import {
+  BadRequestError,
+  UnauthenticatedError,
+  NotFoundError,
+} from "../errors/index.js";
+import fs from "fs";
 
 export const allYatchTypes = async (req, res) => {
   const types = await yatchType.find({});
@@ -35,7 +40,8 @@ export const getYatchsByTypes = async (req, res) => {
 
 export const createYatch = async (req, res) => {
   req.body.user = req.user.userId;
-  const media = req.body.media;
+  const media = req.files;
+  const img = [];
   var type = await yatchType.findOne({ name: req.body.yatchType });
   if (!type) {
     throw NotFoundError(`Yatch type does not exist`);
@@ -44,18 +50,24 @@ export const createYatch = async (req, res) => {
   if (media) {
     for (let i = 0; i < media.length; i++) {
       try {
-        const result = await cloudinary.v2.uploader.upload(media[i].url, {
+        const result = await cloudinary.v2.uploader.upload(media[i].path, {
           folder: "Trave-Leaf/Yatch/Media/",
           use_filename: true,
         });
-        media[i].url = result.url; // Replace media URL w
+        img.push({
+          url: result.url,
+        });
+        //media[i].url = result.url; // Replace media URL w
+        fs.unlinkSync(media[i].path);
       } catch (error) {
         console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        throw new BadRequestError({
+          "error uploading image on cloudinary": error,
+        });
       }
     }
   }
-  let yatch = await Yatch.create({ ...req.body });
+  let yatch = await Yatch.create({ ...req.body, media: img });
   yatch = await Yatch.findOne({ _id: yatch._id })
     .populate("user", "fullName avatar username userType _id")
     .populate("yatchType", "name _id");
@@ -87,15 +99,21 @@ export const editYatch = async (req, res) => {
         media[i].url = result.url; // Replace media URL w
       } catch (error) {
         console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        throw new BadRequestError({
+          "error uploading image on cloudinary": error,
+        });
       }
     }
   }
 
-  yatch = await Yatch.findOneAndUpdate({ _id: yatchId, user: userId }, req.body, {
-    new: true,
-    runValidators: true,
-  })
+  yatch = await Yatch.findOneAndUpdate(
+    { _id: yatchId, user: userId },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
     .populate("user", "fullName avatar username userType _id")
     .populate("yatchType", "name _id");
 

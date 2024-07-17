@@ -1,7 +1,12 @@
 import { carType, Car } from "../models/car.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
+import {
+  BadRequestError,
+  UnauthenticatedError,
+  NotFoundError,
+} from "../errors/index.js";
+import fs from "fs";
 
 export const allCarTypes = async (req, res) => {
   const types = await carType.find({});
@@ -35,7 +40,8 @@ export const getCarsByTypes = async (req, res) => {
 
 export const createCar = async (req, res) => {
   req.body.user = req.user.userId;
-  const media = req.body.media;
+  const media = req.files;
+  const img = [];
   var type = await carType.findOne({ name: req.body.carType });
   if (!type) {
     throw NotFoundError(`Car type does not exist`);
@@ -44,18 +50,24 @@ export const createCar = async (req, res) => {
   if (media) {
     for (let i = 0; i < media.length; i++) {
       try {
-        const result = await cloudinary.v2.uploader.upload(media[i].url, {
+        const result = await cloudinary.v2.uploader.upload(media[i].path, {
           folder: "Trave-Leaf/Cars/Media/",
           use_filename: true,
         });
-        media[i].url = result.url; // Replace media URL w
+        img.push({
+          url: result.url,
+        });
+        //media[i].url = result.url; // Replace media URL w
+        fs.unlinkSync(media[i].path);
       } catch (error) {
         console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        throw new BadRequestError({
+          "error uploading image on cloudinary": error,
+        });
       }
     }
   }
-  let car = await Car.create({ ...req.body });
+  let car = await Car.create({ ...req.body, media: img });
   car = await Car.findOne({ _id: car._id })
     .populate("user", "fullName avatar username userType _id")
     .populate("carType", "name _id");
@@ -88,7 +100,9 @@ export const editCar = async (req, res) => {
         media[i].url = result.url; // Replace media URL w
       } catch (error) {
         console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        throw new BadRequestError({
+          "error uploading image on cloudinary": error,
+        });
       }
     }
   }

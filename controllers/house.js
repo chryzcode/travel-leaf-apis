@@ -1,8 +1,13 @@
 import { House, houseType } from "../models/house.js";
 import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
+import {
+  BadRequestError,
+  UnauthenticatedError,
+  NotFoundError,
+} from "../errors/index.js";
 import notFound from "../middleware/not-found.js";
+import fs from "fs"
 
 cloudinary.v2.config({
   cloudinary_url: process.env.CLOUDINARY_URL,
@@ -105,15 +110,21 @@ export const editHouse = async (req, res) => {
         media[i].url = result.url; // Replace media URL w
       } catch (error) {
         console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        throw new BadRequestError({
+          "error uploading image on cloudinary": error,
+        });
       }
     }
   }
 
-  house = await House.findOneAndUpdate({ _id: houseId, user: userId }, req.body, {
-    new: true,
-    runValidators: true,
-  })
+  house = await House.findOneAndUpdate(
+    { _id: houseId, user: userId },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
     .populate("user", "fullName avatar username userType _id")
     .populate("houseType", "name _id");
 
