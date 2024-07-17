@@ -6,7 +6,7 @@ export default async (req, res, next) => {
   // check header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer")) {
-    throw new UnauthenticatedError("Authentication invalid");
+    throw new UnauthenticatedError("Token does not start with Bearer");
   }
   const token = authHeader.split(" ")[1];
   const user = await User.findOne({ token: token, verified: true });
@@ -21,6 +21,6 @@ export default async (req, res, next) => {
       throw new UnauthenticatedError("Authentication invalid");
     }
   } else {
-    throw new UnauthenticatedError("Authentication invalid");
+    throw new UnauthenticatedError("User does not exist or not verified");
   }
 };

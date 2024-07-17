@@ -68,19 +68,23 @@ export const verifyAccount = async (req, res) => {
 
 export const signIn = async (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     throw new BadRequestError("Put in your email/username and password");
   }
-  var user = await User.findOne({ email: email });
+
+  const user = await User.findOne({ email: email });
 
   if (!user) {
     throw new UnauthenticatedError("User does not exist");
   }
+
   const passwordMatch = await user.comparePassword(password);
   if (!passwordMatch) {
     throw new UnauthenticatedError("Invalid password");
   }
-  if (user.verified == false) {
+
+  if (!user.verified) {
     const maildata = {
       from: process.env.Email_User,
       to: user.email,
@@ -91,19 +95,31 @@ export const signIn = async (req, res) => {
         linkVerificationtoken
       )}">link</a> to verify your account. Link expires in 10 mins.</p>`,
     };
-    transporter.sendMail(maildata, (error, info) => {
-      if (error) {
-        console.log(error);
-        res.status(StatusCodes.BAD_REQUEST).send();
-      }
-      console.log(info);
-      res.status(StatusCodes.OK).send();
-    });
-    throw new UnauthenticatedError("Account is not verified, kindly check your mail for verfication");
+
+    nodemailer
+      .createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.Email_User,
+          pass: process.env.Email_Pass,
+        },
+      })
+      .sendMail(maildata, (error, info) => {
+        if (error) {
+          console.log(error);
+          return res.status(StatusCodes.BAD_REQUEST).send();
+        }
+        console.log(info);
+        return res.status(StatusCodes.OK).send();
+      });
+
+    throw new UnauthenticatedError("Account is not verified, kindly check your mail for verification");
   }
-  var token = user.createJWT();
-  await User.findOneAndUpdate({ token: token });
-  token = user.token;
+
+  const token = user.createJWT();
+  user.token = token;
+  await user.save();
+
   res.status(StatusCodes.OK).json({ user: { fullName: user.fullName }, token });
 };
 
@@ -131,9 +147,9 @@ export const updateUser = async (req, res) => {
   if (!user) {
     throw new NotFoundError(`User with id ${userId} does not exist`);
   }
-  if (!user.avatar && !req.body.avatar) {
-    throw new BadRequestError("The image field is required");
-  }
+  // if (!user.avatar && !req.body.avatar) {
+  //   throw new BadRequestError("The image field is required");
+  // }
 
   if (req.body.avatar) {
     try {
