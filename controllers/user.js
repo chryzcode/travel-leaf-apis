@@ -163,9 +163,10 @@ export const signIn = async (req, res) => {
     throw new UnauthenticatedError("Account is not verified, kindly check your mail for verification");
   }
 
-  const token = user.createJWT();
-  user.token = token;
-  await user.save();
+  let token = user.createJWT();
+  await User.findOneAndUpdate({ _id: user._id }, { token: token });
+  token = user.token;
+
 
   res.status(StatusCodes.OK).json({ user: { fullName: user.fullName }, token });
 };
