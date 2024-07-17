@@ -192,17 +192,14 @@ export const getUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { userId } = req.user;
-  var user = await User.findOne({ _id: userId });
+  let user = await User.findOne({ _id: userId });
   if (!user) {
     throw new NotFoundError(`User with id ${userId} does not exist`);
   }
-  // if (!user.avatar && !req.body.avatar) {
-  //   throw new BadRequestError("The image field is required");
-  // }
 
   if (req.body.avatar) {
     try {
-      const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+      const result = await cloudinary.uploader.upload(req.body.avatar, {
         folder: "Trave-Leaf/User/Avatar/",
         use_filename: true,
       });
@@ -215,6 +212,11 @@ export const updateUser = async (req, res) => {
     }
   }
 
+  if (req.body.password) {
+    const salt = await bcrypt.genSalt(10);
+    req.body.password = await bcrypt.hash(req.body.password, salt);
+  }
+
   user = await User.findOneAndUpdate({ _id: userId }, req.body, {
     new: true,
     runValidators: true,
@@ -222,6 +224,8 @@ export const updateUser = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ user });
 };
+
+
 
 export const deleteUser = async (req, res) => {
   const { userId } = req.user;

@@ -12,7 +12,7 @@ export default async (req, res, next) => {
   const user = await User.findOne({ token: token });
 
  if (user) {
-    req.user = { userId: user._Id, firstName: user.firstName };
+    req.user = { userId: user._id, firstName: user.firstName };
     if (!user.verified) {
       try {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
