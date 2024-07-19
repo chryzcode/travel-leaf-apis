@@ -15,7 +15,7 @@ const uploadToCloudinary = file => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: "Trave-Leaf/House/Media/",
+        folder: "Trave-Leaf/Media/",
         resource_type: "auto",
       },
       (error, result) => {
