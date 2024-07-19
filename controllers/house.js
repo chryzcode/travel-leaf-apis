@@ -1,17 +1,12 @@
 import { House, houseType } from "../models/house.js";
-import cloudinary from "cloudinary";
+import { uploadToCloudinary } from "../utils/cloudinaryConfig.js";
 import { StatusCodes } from "http-status-codes";
 import {
   BadRequestError,
   UnauthenticatedError,
   NotFoundError,
 } from "../errors/index.js";
-import notFound from "../middleware/not-found.js";
-import fs from "fs"
 
-cloudinary.v2.config({
-  cloudinary_url: process.env.CLOUDINARY_URL,
-});
 
 export const allHouseTypes = async (req, res) => {
   const types = await houseType.find({});
@@ -45,90 +40,80 @@ export const getHousesByTypes = async (req, res) => {
 
 export const createHouse = async (req, res) => {
   req.body.user = req.user.userId;
-  const mediaFiles = req.media; // Use req.files from Multer
+  const mediaFiles = req.files; // Use req.files from Multer
+
   let type = await houseType.findOne({ name: req.body.houseType });
   if (!type) {
-    throw new NotFoundError("House type does not exist");
+    return res.status(404).json({ error: "House type does not exist" });
   }
-  req.body.houseType = type.id;
+  req.body.houseType = type._id;
+
 
   if (mediaFiles) {
     req.body.media = [];
     for (const file of mediaFiles) {
       try {
-        const result = await new Promise((resolve, reject) => {
-          cloudinary.v2.uploader
-            .upload_stream(
-              {
-                folder: "Trave-Leaf/House/Media/",
-                use_filename: true,
-              },
-              (error, result) => {
-                if (error) reject(error);
-                resolve(result);
-              }
-            )
-            .end(file.buffer);
-        });
-        req.body.media.push({ url: result.url }); // Replace media URL with Cloudinary URL
+        const result = await uploadToCloudinary(file);
+        req.body.media.push({ url: result.secure_url }); // Replace media URL with Cloudinary URL
       } catch (error) {
-        console.error(error);
-        throw new BadRequestError({ "error uploading image on cloudinary": error });
+        console.error("Error uploading image to Cloudinary:", error);
+        return res.status(400).json({ error: "Error uploading image to Cloudinary" });
       }
     }
   }
 
-  let house = await House.create({ ...req.body });
-  house = await House.findOne({ _id: house._id })
-    .populate("user", "fullName avatar username userType _id")
-    .populate("houseType", "name _id");
-  res.status(StatusCodes.OK).json({ house });
+  try {
+    let house = await House.create({ ...req.body });
+    house = await House.findOne({ _id: house._id })
+      .populate("user", "fullName avatar username userType _id")
+      .populate("houseType", "name _id");
+    res.status(200).json({ house });
+  } catch (error) {
+    console.error("Error creating house:", error);
+    res.status(500).json({ error: "Error creating house", details: error.message });
+  }
 };
+
 
 export const editHouse = async (req, res) => {
   const { houseId } = req.params;
   const userId = req.user.userId;
-  const media = req.body.media;
+  const mediaFiles = req.files; // Use req.files from Multer
 
-  var type = await houseType.findOne({ name: req.body.houseType });
+  // Check if houseType exists
+  let type = await houseType.findOne({ name: req.body.houseType });
   if (!type) {
-    throw NotFoundError(`House type does not exist`);
+    return res.status(404).json({ error: "House type does not exist" });
   }
-  req.body.houseType = type.id;
+  req.body.houseType = type._id;
 
-  var house = await House.findOne({ _id: houseId, user: userId });
+  // Find and validate the house
+  let house = await House.findOne({ _id: houseId, user: userId });
   if (!house) {
-    throw new NotFoundError(`House with id ${houseId} does not exist`);
+    return res.status(404).json({ error: `House with id ${houseId} does not exist` });
   }
-  if (media !== house.media) {
-    for (let i = 0; i < media.length; i++) {
-      try {
-        const result = await cloudinary.v2.uploader.upload(media[i].url, {
-          folder: "Trave-Leaf/House/Media/",
-          use_filename: true,
-        });
-        media[i].url = result.url; // Replace media URL w
-      } catch (error) {
-        console.error(error);
-        throw new BadRequestError({
-          "error uploading image on cloudinary": error,
-        });
-      }
+
+  // Handle media file uploads
+  if (mediaFiles && mediaFiles.length > 0) {
+    try {
+      const uploadPromises = mediaFiles.map(file => uploadToCloudinary(file));
+      const results = await Promise.all(uploadPromises);
+      req.body.media = results.map(result => ({ url: result.secure_url }));
+    } catch (error) {
+      console.error("Error uploading images to Cloudinary:", error);
+      return res.status(400).json({ error: "Error uploading images" });
     }
   }
 
-  house = await House.findOneAndUpdate(
-    { _id: houseId, user: userId },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    }
-  )
+  // Update house information
+  house = await House.findOneAndUpdate({ _id: houseId, user: userId }, req.body, {
+    new: true,
+    runValidators: true,
+  })
     .populate("user", "fullName avatar username userType _id")
     .populate("houseType", "name _id");
 
-  res.status(StatusCodes.OK).json({ house });
+  res.status(200).json({ house });
 };
 
 export const getAvailableHouses = async (req, res) => {

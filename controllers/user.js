@@ -8,10 +8,9 @@ import {
 } from "../errors/index.js";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
-import cloudinary from "cloudinary";
+import { uploadToCloudinary } from "../utils/cloudinaryConfig.js";
 import bcrypt from "bcryptjs";
 import { Wallet } from "../models/payment.js";
-import { request } from "express";
 
 const uniqueID = uuidv4();
 const domain = process.env.DOMAIN || "http://localhost:8000";
@@ -193,37 +192,44 @@ export const getUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const { userId } = req.user;
-  let user = await User.findOne({ _id: userId });
-  if (!user) {
-    throw new NotFoundError(`User with id ${userId} does not exist`);
-  }
+  const { avatar, password } = req.body;
 
-  if (req.body.avatar) {
-    try {
-      const result = await cloudinary.uploader.upload(req.body.avatar, {
-        folder: "Trave-Leaf/User/Avatar/",
-        use_filename: true,
-      });
-      req.body.avatar = result.url;
-    } catch (error) {
-      console.error(error);
-      throw new BadRequestError({
-        "error uploading image on cloudinary": error,
-      });
+  try {
+    // Find and validate the user
+    let user = await User.findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({ error: `User with id ${userId} does not exist` });
     }
+
+    // Handle avatar upload if provided
+    if (avatar) {
+      try {
+        const result = await uploadToCloudinary(avatar);
+        req.body.avatar = result.secure_url; // Use secure_url for HTTPS
+      } catch (error) {
+        console.error("Error uploading avatar to Cloudinary:", error);
+        return res.status(400).json({ error: "Error uploading avatar to Cloudinary" });
+      }
+    }
+
+    // Handle password hashing if provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      req.body.password = await bcrypt.hash(password, salt);
+    }
+
+    // Update user information
+    user = await User.findOneAndUpdate({ _id: userId }, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    // Respond with updated user data
+    res.status(StatusCodes.OK).json({ user });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ error: "Error updating user", details: error.message });
   }
-
-  if (req.body.password) {
-    const salt = await bcrypt.genSalt(10);
-    req.body.password = await bcrypt.hash(req.body.password, salt);
-  }
-
-  user = await User.findOneAndUpdate({ _id: userId }, req.body, {
-    new: true,
-    runValidators: true,
-  });
-
-  res.status(StatusCodes.OK).json({ user });
 };
 
 

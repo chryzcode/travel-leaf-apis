@@ -1,12 +1,11 @@
 import { carType, Car } from "../models/car.js";
-import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
 import {
   BadRequestError,
   UnauthenticatedError,
   NotFoundError,
 } from "../errors/index.js";
-import fs from "fs";
+import { uploadToCloudinary } from "../utils/cloudinaryConfig.js";
 
 export const allCarTypes = async (req, res) => {
   const types = await carType.find({});
@@ -40,81 +39,81 @@ export const getCarsByTypes = async (req, res) => {
 
 export const createCar = async (req, res) => {
   req.body.user = req.user.userId;
-  const media = req.files;
-  const img = [];
-  var type = await carType.findOne({ name: req.body.carType });
-  if (!type) {
-    throw NotFoundError(`Car type does not exist`);
-  }
-  req.body.carType = type.id;
-  if (media) {
-    for (let i = 0; i < media.length; i++) {
-      try {
-        const result = await cloudinary.v2.uploader.upload(media[i].path, {
-          folder: "Trave-Leaf/Cars/Media/",
-          use_filename: true,
-        });
-        img.push({
-          url: result.url,
-        });
-        //media[i].url = result.url; // Replace media URL w
-        fs.unlinkSync(media[i].path);
-      } catch (error) {
-        console.error(error);
-        throw new BadRequestError({
-          "error uploading image on cloudinary": error,
-        });
+  const mediaFiles = req.files; // Use req.files from Multer
+
+  try {
+    let type = await carType.findOne({ name: req.body.carType });
+    if (!type) {
+      return res.status(404).json({ error: "Car type does not exist" });
+    }
+    req.body.carType = type._id;
+
+    const mediaUrls = [];
+    if (mediaFiles) {
+      for (const file of mediaFiles) {
+        try {
+          const result = await uploadToCloudinary(file);
+          mediaUrls.push({ url: result.secure_url });
+        } catch (error) {
+          console.error("Error uploading image to Cloudinary:", error);
+          return res.status(400).json({ error: "Error uploading image to Cloudinary" });
+        }
       }
     }
+    req.body.media = mediaUrls;
+
+    let car = await Car.create({ ...req.body });
+    car = await Car.findOne({ _id: car._id })
+      .populate("user", "fullName avatar username userType _id")
+      .populate("carType", "name _id");
+
+    res.status(200).json({ car });
+  } catch (error) {
+    console.error("Error creating car:", error);
+    res.status(500).json({ error: "Error creating car", details: error.message });
   }
-  let car = await Car.create({ ...req.body, media: img });
-  car = await Car.findOne({ _id: car._id })
-    .populate("user", "fullName avatar username userType _id")
-    .populate("carType", "name _id");
-  res.status(StatusCodes.OK).json({ car });
 };
 
 export const editCar = async (req, res) => {
   const { carId } = req.params;
   const userId = req.user.userId;
-  const media = req.body.media;
+  const mediaFiles = req.files; // Use req.files from Multer
 
-  var type = await carType.findOne({ name: req.body.carType });
-  if (!type) {
-    throw NotFoundError(`House type does not exist`);
-  }
+  try {
+    let type = await carType.findOne({ name: req.body.carType });
+    if (!type) {
+      return res.status(404).json({ error: "Car type does not exist" });
+    }
+    req.body.carType = type._id;
 
-  req.body.carType = type.id;
+    let car = await Car.findOne({ _id: carId, user: userId });
+    if (!car) {
+      return res.status(404).json({ error: `Car with id ${carId} does not exist` });
+    }
 
-  var car = await Car.findOne({ _id: carId, user: userId });
-  if (!car) {
-    throw new NotFoundError(`Car with id ${carId} does not exist`);
-  }
-  if (media !== car.media) {
-    for (let i = 0; i < media.length; i++) {
+    if (mediaFiles && mediaFiles.length > 0) {
+      const uploadPromises = mediaFiles.map(file => uploadToCloudinary(file));
       try {
-        const result = await cloudinary.v2.uploader.upload(media[i].url, {
-          folder: "Trave-Leaf/Car/Media/",
-          use_filename: true,
-        });
-        media[i].url = result.url; // Replace media URL w
+        const results = await Promise.all(uploadPromises);
+        req.body.media = results.map(result => ({ url: result.secure_url }));
       } catch (error) {
-        console.error(error);
-        throw new BadRequestError({
-          "error uploading image on cloudinary": error,
-        });
+        console.error("Error uploading images to Cloudinary:", error);
+        return res.status(400).json({ error: "Error uploading images" });
       }
     }
+
+    car = await Car.findOneAndUpdate({ _id: carId, user: userId }, req.body, {
+      new: true,
+      runValidators: true,
+    })
+      .populate("user", "fullName avatar username userType _id")
+      .populate("carType", "name _id");
+
+    res.status(200).json({ car });
+  } catch (error) {
+    console.error("Error updating car:", error);
+    res.status(500).json({ error: "Error updating car", details: error.message });
   }
-
-  car = await Car.findOneAndUpdate({ _id: carId, user: userId }, req.body, {
-    new: true,
-    runValidators: true,
-  })
-    .populate("user", "fullName avatar username userType _id")
-    .populate("carType", "name _id");
-
-  res.status(StatusCodes.OK).json({ car });
 };
 
 export const getAvailableCars = async (req, res) => {
