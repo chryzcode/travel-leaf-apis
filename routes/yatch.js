@@ -1,6 +1,4 @@
 import express from "express";
-import upload from "../middleware/multer.js";
-//const upload = require("../middleware/multer.js")
 import {
   createYatch,
   editYatch,
@@ -14,6 +12,7 @@ import {
   deleteYatch,
 } from "../controllers/yatch.js";
 
+import { multerUpload } from "../utils/cloudinaryConfig.js";
 import authenticateUser from "../middleware/authentication.js";
 
 const router = express.Router();
@@ -21,8 +20,8 @@ const router = express.Router();
 router.route("/").get(allYatchs);
 router.route("/user-yatchs").get(authenticateUser, currentUserYatchs);
 router.route("/filter/:typeId").get(getYatchsByTypes);
-router.route("/create").post(authenticateUser, upload, createYatch);
-router.route("/edit/:yatchId").put(authenticateUser, editYatch);
+router.route("/create").post(authenticateUser, multerUpload.array("media"), createYatch);
+router.route("/edit/:yatchId").put(authenticateUser, multerUpload.array("media"), editYatch);
 router.route("/:yatchId/detail").get(authenticateUser, getYatchDetail);
 router.route("/yatch-types").get(allYatchTypes);
 router.route("/available-yatchs").get(authenticateUser, getAvailableYatchs);

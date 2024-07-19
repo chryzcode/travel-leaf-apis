@@ -1,13 +1,10 @@
 import { yatchType, Yatch } from "../models/yatch.js";
-import cloudinary from "cloudinary";
 import { StatusCodes } from "http-status-codes";
 import {
   BadRequestError,
   UnauthenticatedError,
   NotFoundError,
 } from "../errors/index.js";
-import fs from "fs";
-
 export const allYatchTypes = async (req, res) => {
   const types = await yatchType.find({});
   res.status(StatusCodes.OK).json({ types });
@@ -40,84 +37,82 @@ export const getYatchsByTypes = async (req, res) => {
 
 export const createYatch = async (req, res) => {
   req.body.user = req.user.userId;
-  const media = req.files;
-  const img = [];
-  var type = await yatchType.findOne({ name: req.body.yatchType });
-  if (!type) {
-    throw NotFoundError(`Yatch type does not exist`);
-  }
-  req.body.yatchType = type.id;
-  if (media) {
-    for (let i = 0; i < media.length; i++) {
-      try {
-        const result = await cloudinary.v2.uploader.upload(media[i].path, {
-          folder: "Trave-Leaf/Yatch/Media/",
-          use_filename: true,
-        });
-        img.push({
-          url: result.url,
-        });
-        //media[i].url = result.url; // Replace media URL w
-        fs.unlinkSync(media[i].path);
-      } catch (error) {
-        console.error(error);
-        throw new BadRequestError({
-          "error uploading image on cloudinary": error,
-        });
+  const mediaFiles = req.files; // Use req.files from Multer
+
+  try {
+    let type = await yatchType.findOne({ name: req.body.yatchType });
+    if (!type) {
+      return res.status(404).json({ error: "Yatch type does not exist" });
+    }
+    req.body.yatchType = type._id;
+
+    const mediaUrls = [];
+    if (mediaFiles) {
+      for (const file of mediaFiles) {
+        try {
+          const result = await uploadToCloudinary(file);
+          mediaUrls.push({ url: result.secure_url });
+        } catch (error) {
+          console.error("Error uploading image to Cloudinary:", error);
+          return res.status(400).json({ error: "Error uploading image to Cloudinary" });
+        }
       }
     }
+    req.body.media = mediaUrls;
+
+    let yatch = await Yatch.create({ ...req.body });
+    yatch = await Yatch.findOne({ _id: yatch._id })
+      .populate("user", "fullName avatar username userType _id")
+      .populate("yatchType", "name _id");
+
+    res.status(200).json({ yatch });
+  } catch (error) {
+    console.error("Error creating yatch:", error);
+    res.status(500).json({ error: "Error creating yatch", details: error.message });
   }
-  let yatch = await Yatch.create({ ...req.body, media: img });
-  yatch = await Yatch.findOne({ _id: yatch._id })
-    .populate("user", "fullName avatar username userType _id")
-    .populate("yatchType", "name _id");
-  res.status(StatusCodes.OK).json({ yatch });
 };
+
 
 export const editYatch = async (req, res) => {
   const { yatchId } = req.params;
   const userId = req.user.userId;
-  const media = req.body.media;
+  const mediaFiles = req.files; // Use req.files from Multer
 
-  var type = await yatchType.findOne({ name: req.body.yatchType });
-  if (!type) {
-    throw NotFoundError(`Yatch type does not exist`);
-  }
-  req.body.yatchType = type.id;
+  try {
+    let type = await yatchType.findOne({ name: req.body.yatchType });
+    if (!type) {
+      return res.status(404).json({ error: "Yatch type does not exist" });
+    }
+    req.body.yatchType = type._id;
 
-  var yatch = await Yatch.findOne({ _id: yatchId, user: userId });
-  if (!yatch) {
-    throw new NotFoundError(`Car with id ${yatchId} does not exist`);
-  }
-  if (media !== yatch.media) {
-    for (let i = 0; i < media.length; i++) {
+    let yatch = await Yatch.findOne({ _id: yatchId, user: userId });
+    if (!yatch) {
+      return res.status(404).json({ error: `Yatch with id ${yatchId} does not exist` });
+    }
+
+    if (mediaFiles && mediaFiles.length > 0) {
       try {
-        const result = await cloudinary.v2.uploader.upload(media[i].url, {
-          folder: "Trave-Leaf/Yatch/Media/",
-          use_filename: true,
-        });
-        media[i].url = result.url; // Replace media URL w
+        const uploadPromises = mediaFiles.map(file => uploadToCloudinary(file));
+        const results = await Promise.all(uploadPromises);
+        req.body.media = results.map(result => ({ url: result.secure_url }));
       } catch (error) {
-        console.error(error);
-        throw new BadRequestError({
-          "error uploading image on cloudinary": error,
-        });
+        console.error("Error uploading images to Cloudinary:", error);
+        return res.status(400).json({ error: "Error uploading images" });
       }
     }
-  }
 
-  yatch = await Yatch.findOneAndUpdate(
-    { _id: yatchId, user: userId },
-    req.body,
-    {
+    yatch = await Yatch.findOneAndUpdate({ _id: yatchId, user: userId }, req.body, {
       new: true,
       runValidators: true,
-    }
-  )
-    .populate("user", "fullName avatar username userType _id")
-    .populate("yatchType", "name _id");
+    })
+      .populate("user", "fullName avatar username userType _id")
+      .populate("yatchType", "name _id");
 
-  res.status(StatusCodes.OK).json({ yatch });
+    res.status(200).json({ yatch });
+  } catch (error) {
+    console.error("Error updating yatch:", error);
+    res.status(500).json({ error: "Error updating yatch", details: error.message });
+  }
 };
 
 export const getAvailableYatchs = async (req, res) => {

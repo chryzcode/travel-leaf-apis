@@ -1,6 +1,4 @@
 import express from "express";
-import upload from "../middleware/multer.js";
-//const upload = require("../middleware/multer.js")
   
 import {
   createHouse,
@@ -14,6 +12,7 @@ import {
   getBookedHouses,
   deleteHouse,
 } from "../controllers/house.js";
+import { multerUpload } from "../utils/cloudinaryConfig.js";
 
 import authenticateUser from "../middleware/authentication.js";
 
@@ -22,8 +21,8 @@ const router = express.Router();
 router.route("/").get(allHouses);
 router.route("/user-houses").get(authenticateUser, currentUserHouses);
 router.route("/filter/:typeId").get(getHousesByTypes);
-router.route("/create").post(authenticateUser, upload, createHouse);
-router.route("/edit/:houseId").put(authenticateUser, editHouse);
+router.route("/create").post(authenticateUser, multerUpload.array("media"), createHouse);
+router.route("/edit/:houseId").put(authenticateUser,  multerUpload.array("media"), editHouse);
 router.route("/house-types").get(allHouseTypes);
 router.route("/:houseId/detail").get(authenticateUser, getHouseDetail);
 router.route("/available-houses").get(authenticateUser, getAvailableHouses);
