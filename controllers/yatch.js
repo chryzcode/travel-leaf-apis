@@ -5,6 +5,9 @@ import {
   UnauthenticatedError,
   NotFoundError,
 } from "../errors/index.js";
+import { uploadToCloudinary } from "../utils/cloudinaryConfig.js";
+
+
 export const allYatchTypes = async (req, res) => {
   const types = await yatchType.find({});
   res.status(StatusCodes.OK).json({ types });
