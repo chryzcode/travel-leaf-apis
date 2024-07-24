@@ -18,6 +18,15 @@ const carSchema = new mongoose.Schema(
       ref: "carType",
       required: [true, "Please provide car type"],
     },
+    state: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    zipCode: {
+      type: String,
+    },
     location: {
       type: String,
       required: [true, "Please provide location"],
