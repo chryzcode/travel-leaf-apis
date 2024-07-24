@@ -20,6 +20,15 @@ const houseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    state: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    zipCode: {
+      type: String,
+    },
     location: {
       type: String,
       required: [true, "Please provide location"],

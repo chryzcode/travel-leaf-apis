@@ -22,6 +22,15 @@ const yatchSchema = new mongoose.Schema(
       ref: "yatchType",
       required: [true, "Please provide yatch type"],
     },
+    state: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    zipCode: {
+      type: String,
+    },
     location: {
       type: String,
       required: [true, "Please provide location"],
