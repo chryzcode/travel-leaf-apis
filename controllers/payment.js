@@ -34,8 +34,7 @@ export const walletPayout = async (req, res) => {
 };
 
 export const cancelPayment = async (req, res) => {
-  const { userId } = req.user;
-  const { bookingId } = req.params;
+  const { bookingId, userId } = req.params;
   const booking = await Booking.findOne({ _id: bookingId, user: userId });
   if (!booking) {
     throw new BadRequestError("You don not have booking or this booking is not yours");
@@ -45,8 +44,7 @@ export const cancelPayment = async (req, res) => {
 };
 
 export const successfulPayment = async (req, res) => {
-  const { userId } = req.user;
-  const { bookingId } = req.params;
+  const { bookingId, userId } = req.params;
   if (await Booking.findOne({ _id: bookingId, paid: true })) {
     res.status(StatusCodes.OK).send(`Booking has been paid for already`);
   } else {
