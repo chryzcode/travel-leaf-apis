@@ -39,6 +39,10 @@ const yatchSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide brand"],
     },
+    yatchCapacity: {
+      type: String,
+      required: [true, "Please provide yatchCapacity"],
+    },
     dateAvailable: {
       type: Date,
       required: [true, "Please provide date"],

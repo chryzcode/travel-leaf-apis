@@ -44,8 +44,8 @@ export const createBooking = async (req, res) => {
   req.body.amount = amount;
   req.body.listingId = listing.id;
   var booking = await Booking.create({ ...req.body });
-  const successUrl = `${DOMAIN}/payment/${booking.id}/success`;
-  const cancelUrl = `${DOMAIN}/payment/${booking.id}/cancel`;
+  const successUrl = `${DOMAIN}/payment/${booking.id}/success/${userId}`;
+  const cancelUrl = `${DOMAIN}/payment/${booking.id}/cancel/${userId}`;
   const guestChargeAmount = (amount * 7) / 100;
   try {
     const session = await stripe.checkout.sessions.create({
