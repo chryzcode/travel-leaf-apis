@@ -31,11 +31,10 @@ export const createNotification = async (req, res) => {
   if (!eligibleBooking) {
     throw new UnauthenticatedError(`User is not eligible/ unauthorized to make notification to listing`);
   }
-  const notification = await Notification.create(
-    { ...req.body }
-      .populate("toUser", "fullName avatar username userType _id")
-      .populate("fromUser", "fullName avatar username userType _id")
-  );
+  const newNotification = await Notification.create({ ...req.body });
+  const notification = await Notification.findOne({ _id: newNotification._id })
+    .populate("toUser", "fullName avatar username userType _id")
+    .populate("fromUser", "fullName avatar username userType _id");
   res.status(StatusCodes.CREATED).json({ notification });
 };
 
