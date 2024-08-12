@@ -58,7 +58,7 @@ userSchema.pre("save", async function () {
 
 userSchema.methods.createJWT = function () {
   const token = jwt.sign({ userId: this._id, fullName: this.fullName }, process.env.JWT_SECRET, {
-    expiresIn: "100h", // Increase the token expiry time to 1 hour
+    expiresIn: "1w", // Increase the token expiry time to 1 hour
   });
   this.token = token;
   return token;
