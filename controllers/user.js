@@ -1,11 +1,7 @@
 import { User } from "../models/user.js";
 import { StatusCodes } from "http-status-codes";
 import { transporter, generateToken } from "../utils/user.js";
-import {
-  BadRequestError,
-  UnauthenticatedError,
-  NotFoundError,
-} from "../errors/index.js";
+import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors/index.js";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 import { uploadToCloudinary } from "../utils/cloudinaryConfig.js";
@@ -26,16 +22,18 @@ export const logout = async (req, res) => {
 
 export const signUp = async (req, res) => {
   const user = await User.create({ ...req.body });
-  const maildata = {
-    from: process.env.Email_User,
-    to: user.email,
-    subject: `${user.fullName} verify your account`,
-    html: `<p>Please use the following <a href="${domain}/auth/verify-account/?userId=${
-      user.id
-    }/?token=${encodeURIComponent(
-      linkVerificationtoken
-    )}">link</a> to verify your account. Link expires in 10 mins.</p>`,
-  };
+ const maildata = {
+   from: `"Travel Leaf" <${process.env.Email_User}>`,
+   to: user.email,
+   subject: `${user.fullName}, please verify your account`,
+   html: `<p>Dear ${user.fullName},</p>
+         <p>Please use the following <a href="${domain}/auth/verify-account?userId=${
+     user.id
+   }&token=${encodeURIComponent(
+     linkVerificationtoken
+   )}">link</a> to verify your account. Link expires in 10 minutes.</p>
+         <p>Best regards,<br>Travel Leaf</p>`,
+ };
   transporter.sendMail(maildata, (error, info) => {
     if (error) {
       res.status(StatusCodes.BAD_REQUEST).send();
@@ -43,7 +41,7 @@ export const signUp = async (req, res) => {
     res.status(StatusCodes.OK).send();
   });
   //const token = jwt.sign(user, process.env.JWT_SECRET, {
-    //expiresIn: "5d",
+  //expiresIn: "5d",
   //});
   const token = user.createJWT();
   const wallet = await Wallet.findOne({ user: user.id });
@@ -63,14 +61,16 @@ export const sendEmail = async (res, req) => {
   const { userId } = req.user;
   const user = await User.findById(userId);
   const maildata = {
-    from: process.env.Email_User,
+    from: `"Travel Leaf" <${process.env.Email_User}>`,
     to: user.email,
-    subject: `${user.fullName} verify your account`,
-    html: `<p>Please use the following <a href="${domain}/auth/verify-account/?userId=${
+    subject: `${user.fullName}, please verify your account`,
+    html: `<p>Dear ${user.fullName},</p>
+         <p>Please use the following <a href="${domain}/auth/verify-account?userId=${
       user.id
-    }/?token=${encodeURIComponent(
+    }&token=${encodeURIComponent(
       linkVerificationtoken
-    )}">link</a> to verify your account. Link expires in 10 mins.</p>`,
+    )}">link</a> to verify your account. Link expires in 10 minutes.</p>
+         <p>Best regards,<br>Travel Leaf</p>`,
   };
   transporter.sendMail(maildata, (error, info) => {
     if (error) {
@@ -98,17 +98,11 @@ export const verifyAccount = async (req, res) => {
   const secretKey = process.env.JWT_SECRET;
   try {
     jwt.verify(token, secretKey);
-    const user = await User.findOneAndUpdate(
-      { _id: userId },
-      { verified: true },
-      { new: true, runValidators: true }
-    );
+    const user = await User.findOneAndUpdate({ _id: userId }, { verified: true }, { new: true, runValidators: true });
     res.status(StatusCodes.OK).send();
   } catch (error) {
     console.error("Token verification failed:", error);
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ error: "Invalid or expired token" });
+    res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid or expired token" });
   }
 };
 
@@ -132,32 +126,28 @@ export const signIn = async (req, res) => {
 
   if (!user.verified) {
     const maildata = {
-      from: process.env.Email_User,
+      from: `"Travel Leaf" <${process.env.Email_User}>`,
       to: user.email,
-      subject: `${user.fullName} verify your account`,
-      html: `<p>Please use the following <a href="${domain}/auth/verify-account/?userId=${
+      subject: `${user.fullName}, please verify your account`,
+      html: `
+    <p>Dear ${user.fullName},</p>
+    <p>Thank you for registering with us. Please use the following <a href="${domain}/auth/verify-account?userId=${
         user.id
-      }/?token=${encodeURIComponent(
+      }&token=${encodeURIComponent(
         linkVerificationtoken
-      )}">link</a> to verify your account. Link expires in 10 mins.</p>`,
+      )}">link</a> to verify your account. This link expires in 10 minutes.</p>
+    <p>Best regards,<br>Travel Leaf</p>
+  `,
     };
 
-    nodemailer
-      .createTransport({
-        service: "Gmail",
-        auth: {
-          user: process.env.Email_User,
-          pass: process.env.Email_Pass,
-        },
-      })
-      .sendMail(maildata, (error, info) => {
-        if (error) {
-          console.log(error);
-          return res.status(StatusCodes.BAD_REQUEST).send();
-        }
-        console.log(info);
-        return res.status(StatusCodes.OK).send();
-      });
+    transporter.sendMail(maildata, (error, info) => {
+      if (error) {
+        console.log(error);
+        return res.status(StatusCodes.BAD_REQUEST).send();
+      }
+      console.log(info);
+      return res.status(StatusCodes.OK).send();
+    });
 
     throw new UnauthenticatedError("Account is not verified, kindly check your mail for verification");
   }
@@ -166,7 +156,6 @@ export const signIn = async (req, res) => {
   await User.findOneAndUpdate({ _id: user._id }, { token: token });
   token = user.token;
 
-
   res.status(StatusCodes.OK).json({ user: { fullName: user.fullName }, token });
 };
 
@@ -174,9 +163,7 @@ export const currentUser = async (req, res) => {
   const { userId } = req.user;
   const user = await User.findOne({ _id: userId });
   if (!user) {
-    throw new UnauthenticatedError(
-      "No account is currently logged in or User does not exist"
-    );
+    throw new UnauthenticatedError("No account is currently logged in or User does not exist");
   }
   res.status(StatusCodes.OK).json({ user });
 };
@@ -232,15 +219,9 @@ export const updateUser = async (req, res) => {
   }
 };
 
-
-
 export const deleteUser = async (req, res) => {
   const { userId } = req.user;
-  const user = await User.findOneAndUpdate(
-    { _id: userId },
-    { verified: false },
-    { new: true, runValidators: true }
-  );
+  const user = await User.findOneAndUpdate({ _id: userId }, { verified: false }, { new: true, runValidators: true });
   if (!user) {
     throw new NotFoundError(`User with id ${userId} does not exist`);
   }
@@ -257,14 +238,14 @@ export const sendForgotPasswordLink = async (req, res) => {
     throw new NotFoundError("User does not exists");
   }
   const maildata = {
-    from: process.env.Email_User,
+    from: `"Trave Leaf" <${process.env.Email_User}>`,
     to: user.email,
-    subject: `${user.fullName} you forgot your password`,
-    html: `<p>Please use the following <a href="${domain}/verify/forgot-password/?userId=${
+    subject: `${user.fullName}, you forgot your password`,
+    html: `<p>Dear ${user.fullName},</p>
+         <p>Please use the following <a href="${domain}/verify/forgot-password?userId=${
       user.id
-    }/?token=${encodeURIComponent(
-      linkVerificationtoken
-    )}">link</a> for verification. Link expires in 30 mins.</p>`,
+    }&token=${encodeURIComponent(linkVerificationtoken)}">link</a> for verification. The link expires in 30 minutes.</p>
+         <p>Best regards,<br>Trave Leaf</p>`,
   };
   transporter.sendMail(maildata, (error, info) => {
     if (error) {
@@ -292,18 +273,14 @@ export const verifyForgotPasswordToken = async (req, res) => {
     res.status(StatusCodes.OK).json({ user });
   } catch (error) {
     console.error("Token verification failed:", error);
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ error: "Invalid or expired token" });
+    res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid or expired token" });
   }
 };
 
 export const contactUs = async (req, res) => {
   const { fullName, email, message } = req.body;
   if (!fullName || !email || !message) {
-    throw new BadRequestError(
-      "fullName, email and message fields are compulsory"
-    );
+    throw new BadRequestError("fullName, email and message fields are compulsory");
   }
   const maildata = {
     from: email,
@@ -326,11 +303,7 @@ export const changeUserToHost = async (req, res) => {
     throw new NotFoundError(`User with id ${userId} does not exist`);
   }
 
-  user = await User.findOneAndUpdate(
-    { _id: userId },
-    { userType: "Host" },
-    { new: true, runValidators: true }
-  );
+  user = await User.findOneAndUpdate({ _id: userId }, { userType: "Host" }, { new: true, runValidators: true });
   res.status(StatusCodes.OK).json({ user });
 };
 
@@ -341,10 +314,6 @@ export const changeUserToGuest = async (req, res) => {
     throw new NotFoundError(`User with id ${userId} does not exist`);
   }
 
-  user = await User.findOneAndUpdate(
-    { _id: userId },
-    { userType: "Guest" },
-    { new: true, runValidators: true }
-  );
+  user = await User.findOneAndUpdate({ _id: userId }, { userType: "Guest" }, { new: true, runValidators: true });
   res.status(StatusCodes.OK).json({ user });
 };
