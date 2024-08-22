@@ -32,7 +32,7 @@ app.set("trust proxy", 1);
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, //15 mins
-    max: 100, //limit each ip to 100 requests per windowsMs
+    max: 500, //limit each ip to 100 requests per windowsMs
   })
 );
 
