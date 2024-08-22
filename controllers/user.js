@@ -10,6 +10,7 @@ import { Wallet } from "../models/payment.js";
 
 const uniqueID = uuidv4();
 const domain = process.env.DOMAIN || "http://localhost:8000";
+const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN || "http://localhost:3000";
 
 const linkVerificationtoken = generateToken(uniqueID);
 
@@ -27,9 +28,9 @@ export const signUp = async (req, res) => {
    to: user.email,
    subject: `${user.fullName}, please verify your account`,
    html: `<p>Dear ${user.fullName},</p>
-         <p>Please use the following <a href="${domain}/auth/verify-account?userId=${
+         <p>Please use the following <a href="${domain}/auth/verify-account/${
      user.id
-   }&token=${encodeURIComponent(
+   }/${encodeURIComponent(
      linkVerificationtoken
    )}">link</a> to verify your account. Link expires in 10 minutes.</p>
          <p>Best regards,<br>Travel Leaf</p>`,
@@ -65,9 +66,9 @@ export const sendEmail = async (res, req) => {
     to: user.email,
     subject: `${user.fullName}, please verify your account`,
     html: `<p>Dear ${user.fullName},</p>
-         <p>Please use the following <a href="${domain}/auth/verify-account?userId=${
+         <p>Please use the following <a href="${domain}/auth/verify-account/${
       user.id
-    }&token=${encodeURIComponent(
+    }/${encodeURIComponent(
       linkVerificationtoken
     )}">link</a> to verify your account. Link expires in 10 minutes.</p>
          <p>Best regards,<br>Travel Leaf</p>`,
@@ -93,16 +94,29 @@ export const sendEmail = async (res, req) => {
 };
 
 export const verifyAccount = async (req, res) => {
-  const token = req.params.token;
-  const userId = req.params.userId;
+  const { token, userId } = req.params;
   const secretKey = process.env.JWT_SECRET;
+
   try {
+    // Verify the JWT token
     jwt.verify(token, secretKey);
-    const user = await User.findOneAndUpdate({ _id: userId }, { verified: true }, { new: true, runValidators: true });
-    res.status(StatusCodes.OK).send();
+
+    // Update the user's verified status to true
+    const user = await User.findByIdAndUpdate(userId, { verified: true }, { new: true, runValidators: true });
+
+    // Check if the user was successfully verified
+    if (user) {
+      // Redirect to the specified URL if verification is successful
+      return res.redirect(`${FRONTEND_DOMAIN}/tenantdashboard`);
+    }
+
+    // If user is not found or verification fails, return an error
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: "User not found or verification failed" });
   } catch (error) {
     console.error("Token verification failed:", error);
-    res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid or expired token" });
+
+    // If token verification fails, return a 402 status and redirect
+    return res.status(StatusCodes.PAYMENT_REQUIRED).redirect(`${FRONTEND_DOMAIN}/tenantdashboard`);
   }
 };
 
@@ -131,9 +145,9 @@ export const signIn = async (req, res) => {
       subject: `${user.fullName}, please verify your account`,
       html: `
     <p>Dear ${user.fullName},</p>
-    <p>Thank you for registering with us. Please use the following <a href="${domain}/auth/verify-account?userId=${
+    <p>Thank you for registering with us. Please use the following <a href="${domain}/auth/verify-account/${
         user.id
-      }&token=${encodeURIComponent(
+      }/${encodeURIComponent(
         linkVerificationtoken
       )}">link</a> to verify your account. This link expires in 10 minutes.</p>
     <p>Best regards,<br>Travel Leaf</p>
@@ -242,9 +256,9 @@ export const sendForgotPasswordLink = async (req, res) => {
     to: user.email,
     subject: `${user.fullName}, you forgot your password`,
     html: `<p>Dear ${user.fullName},</p>
-         <p>Please use the following <a href="${domain}/verify/forgot-password?userId=${
+         <p>Please use the following <a href="${domain}/verify/forgot-password/${
       user.id
-    }&token=${encodeURIComponent(linkVerificationtoken)}">link</a> for verification. The link expires in 30 minutes.</p>
+    }/${encodeURIComponent(linkVerificationtoken)}">link</a> for verification. The link expires in 30 minutes.</p>
          <p>Best regards,<br>Trave Leaf</p>`,
   };
   transporter.sendMail(maildata, (error, info) => {
