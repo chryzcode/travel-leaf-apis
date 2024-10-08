@@ -80,6 +80,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
+app.use("/auth/google", cors(corsOptions));
+app.use("/auth/google/callback", cors(corsOptions));
+
 app.use("/", userRouter);
 app.use("/house", houseRouter);
 app.use("/car", carRouter);

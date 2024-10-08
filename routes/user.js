@@ -42,9 +42,10 @@ router.get(
         .status(StatusCodes.BAD_REQUEST)
         .json({ error: "Authentication failed" });
     }
-    res
-      .status(StatusCodes.OK)
-      .json({ user: { fullName: req.user.fullName }, token: req.user.token });
+    res.status(StatusCodes.OK).json({
+      user: { fullName: req.user.fullName },
+      token: req.user.token,
+    });
   }
 );
 
