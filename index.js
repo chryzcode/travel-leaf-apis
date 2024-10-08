@@ -38,11 +38,10 @@ app.use(
 
 app.use(express.json());
 app.use(helmet());
-app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 // Define a whitelist of allowed origins
-const whitelist = ["http://localhost:3000", "https://travle-leaf.onrender.com", "https://travle-leaf.onrender.com", ];
+const whitelist = ["http://localhost:3000", "https://travle-leaf.onrender.com", ];
 
 // Define the CORS options
 const corsOptions = {
@@ -58,17 +57,6 @@ const corsOptions = {
   credentials: true,
 };
 
-app.use((req, res, next) => {
-  res.header(
-    "Access-Control-Allow-Origin",
-    `http://localhost:3000, https://travle-leaf.onrender.com`
-  );
-  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-  // Pass to next layer of middleware
-  next();
-});
 
 // Enable CORS with the specified options
 app.use(cors(corsOptions));
